@@ -1,0 +1,29 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run QEMU with tracing",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "/home/vondrp/qemu920/qemu/build/qemu-system-arm",
+            "args": [
+                "-machine", "vexpress-a15",
+                "-cpu", "cortex-a15",
+                "-kernel", "build/test.elf",
+                "-bios", "/home/vondrp/qemu920/qemu/pc-bios/efi-virtio.rom",
+                "-k", "en-us",
+                "-L", "/home/vondrp/qemu920/qemu/pc-bios",
+                "-icount", "shift=3",
+                "-trace", "events=/home/vondrp/qemu920/qemu/my-trace-events",
+                "-d", "exec,cpu",
+                "-D", "trace-log.txt",
+                "-qmp", "unix:qmp-sock,server,nowait"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": false,
+            "preLaunchTask": "Build ARM ELF"
+        }
+    ]
+}

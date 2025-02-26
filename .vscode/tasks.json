@@ -1,0 +1,15 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build ARM ELF",
+            "type": "shell",
+            "command": "arm-none-eabi-gcc -mcpu=cortex-a15 -g -o build/test.elf src/main.c",
+            "problemMatcher": [],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        }
+    ]
+}
