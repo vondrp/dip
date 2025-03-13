@@ -2,13 +2,65 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "Build ARM ELF",
+            "label": "Compile Fragments",
             "type": "shell",
-            "command": "arm-none-eabi-gcc -mcpu=cortex-a15 -g -o build/test.elf src/main.c",
+            "command": "arm-none-eabi-gcc -mcpu=cortex-a15 -g -c src/main.c -o build/main.o",
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": true }
+        },
+        {
+            "label": "Generate Assembly",
+            "type": "shell",
+            "command": "arm-none-eabi-gcc -mcpu=cortex-a15 -S src/main.c -o build/main.s",
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": false }
+        },
+        {
+            "label": "Link ELF",
+            "type": "shell",
+            "command": "arm-none-eabi-gcc build/main.o -o build/program.elf -specs=rdimon.specs -lc -lrdimon",
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": false }
+        },
+        {
+            "label": "Full Build Task",
+            "dependsOrder": "sequence",
+            "dependsOn": ["Compile Fragments", "Generate Assembly", "Link ELF"],
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": true }
+        },
+        {
+            "label": "Instrument with CREST",
+            "type": "shell",
+            "command": "/home/vondrp/crest012/crest/bin/crestc src/main.c -o build/main_crest",
+            "problemMatcher": [],
+            "group": { "kind": "build", "isDefault": false }
+        },
+        {
+            "label": "Run Angr Analysis",
+            "type": "shell",
+            "command": "python3 analysis/analyze_angr.py build/program.elf",
             "problemMatcher": [],
             "group": {
-                "kind": "build",
-                "isDefault": true
+                "kind": "test",
+                "isDefault": false
+            }
+        },
+        {
+            "label": "Run CREST Tests",
+            "type": "shell",
+            "command": "run_crest build/main_crest --depth=10",
+            "problemMatcher": [],
+            "group": { "kind": "test", "isDefault": false }
+        },
+        {
+            "label": "Analyze Log",
+            "type": "shell",
+            "command": "python3 analysis/analyze.py logs/trace-log.txt",
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": false
             }
         }
     ]
