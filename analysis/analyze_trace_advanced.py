@@ -4,18 +4,45 @@ import collections
 import subprocess
 import json
 
-TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "traceT.log")
-BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_program.elf")  
-SOURCE_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "test_program.c")  
+TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace.log")
+BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary")
+SOURCE_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "test_program.c")
 
-# Seznam funkcí, které nás zajímají
-ALLOWED_FUNCTIONS = {"compute"}
+def get_static_function_address(binary_path, function_name):
+    """Získá statickou adresu funkce z binárky pomocí `nm -n`."""
+    try:
+        output = subprocess.run(["nm", "-n", binary_path], capture_output=True, text=True).stdout
+        for line in output.split("\n"):
+            parts = line.split()
+            if len(parts) == 3 and parts[1] == "T" and parts[2] == function_name:
+                return int(parts[0], 16)
+    except Exception as e:
+        print(f"[ERROR] Chyba při získávání statické adresy `{function_name}`: {e}")
 
+    return None
+
+def get_runtime_function_address(trace_file, function_name):
+    """Najde runtime adresu funkce v zadaném log souboru."""
+    try:
+        with open(trace_file, "r") as f:
+            for line in f:
+                match = re.search(r"call\s+(0x[0-9a-fA-F]+)\s+<" + re.escape(function_name) + ">", line)
+                if match:
+                    runtime_addr = int(match.group(1), 16)
+                    print(f"[INFO] Runtime adresa `{function_name}`: {hex(runtime_addr)}")
+                    return runtime_addr
+    except FileNotFoundError:
+        print(f"[ERROR] Soubor `{trace_file}` nebyl nalezen.")
+        return None
+    except Exception as e:
+        print(f"[ERROR] Při čtení souboru došlo k chybě: {e}")
+        return None
+
+    print(f"[ERROR] Runtime adresa `{function_name}` nebyla nalezena v logu.")
+    return None
 
 def get_text_base_from_log(trace_file):
-    """
-    Načte runtime adresu TEXT_BASE z trace.log
-    """
+    """Načte runtime adresu TEXT_BASE z `trace.log`."""
     with open(trace_file, "r") as f:
         for line in f:
             match = re.match(r"TEXT_BASE\s+(0x[0-9a-fA-F]+)", line)
@@ -27,45 +54,17 @@ def get_text_base_from_log(trace_file):
     print("[ERROR] TEXT_BASE nebyl nalezen v logu.")
     return None
 
-
-def get_text_section_start(binary_path):
-    """
-    Získá statickou adresu .text sekce v binárce
-    """
-    try:
-        readelf_output = subprocess.run(["readelf", "-S", binary_path], capture_output=True, text=True).stdout
-        for line in readelf_output.split("\n"):
-            if ".text" in line:
-                static_start = int(line.split()[3], 16)
-                print(f"[INFO] Statická adresa .text sekce: {hex(static_start)}")
-                return static_start
-    except Exception as e:
-        print(f"[ERROR] Chyba při získávání statické adresy .text: {e}")
-
-    return None
-
-
 def get_source_line(binary_path, addr, runtime_addr_compute, static_addr_compute):
-    """
-    Přepočítá runtime adresu na statickou a mapuje ji na zdrojový kód pomocí `addr2line`.
-    """
+    """Přepočítá runtime adresu na statickou a mapuje ji na zdrojový kód pomocí `addr2line`."""
     try:
         if isinstance(addr, str):
             addr = int(addr, 16)
 
-        # Výpočet správného offsetu
         offset = runtime_addr_compute - static_addr_compute
         real_addr = addr - offset
 
-        print(f"[DEBUG] Přepočítaná adresa {hex(addr)} -> {hex(real_addr)} (offset: {hex(offset)})")
-
-        # Zarovnání na 4B
-        real_addr &= ~0x3
-
-        # Spustíme addr2line
         result = subprocess.run(["addr2line", "-e", binary_path, hex(real_addr)], stdout=subprocess.PIPE, text=True)
         line = result.stdout.strip()
-        print(f"[DEBUG] addr2line výstup: {line}")
 
         if "??" in line:
             return None
@@ -74,35 +73,45 @@ def get_source_line(binary_path, addr, runtime_addr_compute, static_addr_compute
         print(f"[ERROR] Chyba addr2line: {e}")
         return None
 
-
-def parse_trace(file_path, text_base, runtime_addr_compute, static_addr_compute):
-    """
-    Načte trace.log, extrahuje instrukce a mapuje je na řádky zdrojového kódu.
-    """
+def parse_trace(file_path, runtime_addr_compute, static_addr_compute):
+    """Analyzuje trace.log a extrahuje instrukce jen pro funkci `compute`."""
     source_line_counts = collections.defaultdict(int)
+    call_instruction_count = 0
+    inside_compute = False
 
     with open(file_path, "r") as f:
         for line in f:
-            match = re.match(r"(\w+),\s+(0x[0-9a-fA-F]+):\s+(\w+)", line)
-            if match:
-                function_name, address, instruction = match.groups()
+            # Zachytáváme vstup do funkce `compute`
+            if f"call   {hex(runtime_addr_compute)} <compute>" in line:
+                inside_compute = True
+                continue
 
-                if function_name not in ALLOWED_FUNCTIONS:
-                    continue  
+            if inside_compute:
+                match = re.match(r"\w+,\s+(0x[0-9a-fA-F]+):\s+(\w+)", line)
+                if match:
+                    address, instruction = match.groups()
+                    source_line = get_source_line(BINARY_FILE, address, runtime_addr_compute, static_addr_compute)
 
-                source_line = get_source_line(BINARY_FILE, address, runtime_addr_compute, static_addr_compute)
-                if source_line:
-                    source_line_counts[source_line] += 1  
-                else:
-                    print(f"[WARNING] Nepodařilo se namapovat adresu {address}")
+                    if source_line:
+                        source_line_counts[source_line] += 1
+                    else:
+                        print(f"[WARNING] Nepodařilo se namapovat adresu {address}")
+
+                    # Detekce volání jiné funkce
+                    if "call" in instruction:
+                        call_instruction_count += 1
+
+                # Pokud narazíme na `ret`, znamená to konec funkce `compute`
+                if "ret" in line:
+                    inside_compute = False
+
+    print(f"[INFO] Celkem instrukcí ve `compute`: {sum(source_line_counts.values())}")
+    print(f"[INFO] Instrukce spotřebované voláním jiných funkcí: {call_instruction_count}")
 
     return source_line_counts
 
-
 def save_json(source_line_counts):
-    """
-    Uloží výsledky do JSON souboru.
-    """
+    """Uloží výsledky do JSON souboru."""
     output_file = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions.json")
     json_data = {"source_file": SOURCE_FILE, "instructions": source_line_counts}
 
@@ -111,23 +120,23 @@ def save_json(source_line_counts):
 
     print(f"[INFO] Výsledky uloženy do {output_file}")
 
-
 if __name__ == "__main__":
     print("[INFO] Spouštím analýzu trace logu")
 
     text_base = get_text_base_from_log(TRACE_FILE)
-    static_text_start = get_text_section_start(BINARY_FILE)
+    static_addr_compute = get_static_function_address(BINARY_FILE, "compute")
+    runtime_addr_compute = get_runtime_function_address(TRACE_FILE, "compute")
 
-    # Statická a runtime adresa funkce `compute`
-    static_addr_compute = 0x11ef  # Statická adresa `compute` z `nm`
-    runtime_addr_compute = 0x5555555551ef  # Dynamická adresa `compute` z `trace.log`
+    print(f"[INFO] Statická adresa `compute`: {hex(static_addr_compute) if static_addr_compute else 'Nenalezena'}")
+    print(f"[INFO] Runtime adresa `compute`: {hex(runtime_addr_compute) if runtime_addr_compute else 'Nenalezena'}")
 
-    if text_base is None or static_text_start is None:
-        print("[ERROR] Nepodařilo se získat potřebné adresy. Analýza nebude přesná.")
-    else:
-        print(f"[INFO] Text Base (runtime): {hex(text_base)}, Static .text start: {hex(static_text_start)}")
+    if static_addr_compute is None or runtime_addr_compute is None:
+        print("[ERROR] Nepodařilo se získat adresy funkce `compute`!")
+        exit(1)
 
-    source_line_counts = parse_trace(TRACE_FILE, text_base, runtime_addr_compute, static_addr_compute)
+    print("[SUCCESS] Úspěšně nalezeny obě adresy!")
+
+    source_line_counts = parse_trace(TRACE_FILE, runtime_addr_compute, static_addr_compute)
     save_json(source_line_counts)
 
     print("[INFO] Analýza dokončena!")

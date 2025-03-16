@@ -12,7 +12,7 @@ void logic_branch(int x) {
     } else {
         printf("Malá hodnota x=%d\n", x);
     }
-}
+} 
 
 void compute(int a, int b) {
     if (a == 42) {
@@ -20,8 +20,9 @@ void compute(int a, int b) {
     }
     if (b == 0) {
         printf("Chyba: dělení nulou!\n");
-        int x = 1 / b; 
+        int x = 1 / b;
     }
+    printf("Konec compute funkce");
 }
 
 
