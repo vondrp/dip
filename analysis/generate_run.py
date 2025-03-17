@@ -4,14 +4,10 @@ import subprocess
 
 SRC_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "test_program.c")
 GENERATED_MAIN = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main.c")
-BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary")
-TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace.log")
 GDB_SCRIPT = os.path.join(os.path.dirname(__file__), "..", "gdb", "gdb_trace.py")
 
 def extract_functions_and_params(source_file):
-    """
-    Načte zdrojový soubor a najde všechny definice funkcí a jejich parametry.
-    """
+    """Najde definice funkcí a jejich parametry v souboru."""
     functions = {}
     with open(source_file, "r") as f:
         for line in f:
@@ -23,9 +19,7 @@ def extract_functions_and_params(source_file):
     return functions
 
 def generate_main(target_function, params):
-    """
-    Vytvoří nový soubor `generated_main.c`, který volá zvolenou funkci.
-    """
+    """Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky."""
     with open(GENERATED_MAIN, "w") as f:
         f.write('#include <stdio.h>\n#include <stdlib.h>\n')
         f.write('#define MAIN_DEFINED\n')  # Zabrání překladu původního main()
@@ -38,43 +32,38 @@ def generate_main(target_function, params):
 
         converted_params = []
         for i, param in enumerate(params):
-            param_type = param.split()[0]  # Např. `int`, `float`, `char*`
+            param_type = param.split()[0]
             if "int" in param_type:
                 converted_params.append(f"atoi(argv[{i + 1}])")
             elif "float" in param_type or "double" in param_type:
                 converted_params.append(f"atof(argv[{i + 1}])")
             else:
-                converted_params.append(f"argv[{i + 1}]")  # Předpokládáme `char*`
+                converted_params.append(f"argv[{i + 1}]")
 
         f.write(f'    printf("Spouštím test funkce: {target_function}\\n");\n')
         f.write(f"    {target_function}({', '.join(converted_params)});\n")
         f.write("    return 0;\n}\n")
 
-def run_gdb_trace():
-    """Spustí program v GDB a zachytí instrukce do souboru."""
-    gdb_cmd = [
-        "gdb", "-q", "-ex", f"source {GDB_SCRIPT}",
-        "-ex", "starti",
-        "-ex", f"trace-asm {TRACE_FILE}",
-        "-ex", "quit",
-        "--args", BINARY_FILE, "10", "5"
-    ]
-    print(f"Spouštím GDB: {' '.join(gdb_cmd)}")
-    subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-        
-
-def compile():
-    """
-    Přeloží `generated_main.c` a spustí program.
-    """
-    compile_cmd = ["gcc", "-g", "-o", BINARY_FILE, GENERATED_MAIN]
+def compile(binary_file):
+    """Přeloží `generated_main.c` do binárního souboru."""
+    compile_cmd = ["gcc", "-g", "-o", binary_file, GENERATED_MAIN]
     print(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
 
+def run_gdb_trace(binary_file, trace_file, args):
+    """Spustí GDB s vybranými parametry a zachytí instrukce do `trace.log`."""
+    gdb_cmd = [
+        "gdb", "-q", "-ex", f"source {GDB_SCRIPT}",
+        "-ex", "starti",
+        "-ex", f"trace-asm {trace_file}",
+        "-ex", "quit",
+        "--args", binary_file, *args
+    ]
+    print(f"Spouštím GDB: {' '.join(gdb_cmd)}")
+    subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
 def cleanup():
-    """
-    Smaže vygenerovaný soubor `generated_main.c`.
-    """
+    """Odstraní `generated_main.c`."""
     if os.path.exists(GENERATED_MAIN):
         os.remove(GENERATED_MAIN)
         print("Smazán `generated_main.c`")
@@ -90,12 +79,20 @@ if __name__ == "__main__":
         print(f" - {func}({', '.join(params)})")
 
     target_function = input("Zadej jméno funkce k testování: ")
-    
     if target_function not in functions:
         print("Neplatná funkce.")
         exit(1)
 
+    param_values = []
+    for param in functions[target_function]:
+        value = input(f"Zadej hodnotu pro `{param}`: ")
+        param_values.append(value)
+
+    param_str = "_".join(param_values).replace(" ", "")
+    binary_file = os.path.join(os.path.dirname(__file__), f"..", "build", f"test_binary_{target_function}_{param_str}")
+    trace_file = os.path.join(os.path.dirname(__file__), f"..", "logs", f"trace_{target_function}_{param_str}.log")
+
     generate_main(target_function, functions[target_function])
-    compile()
-    run_gdb_trace()
+    compile(binary_file)
+    run_gdb_trace(binary_file, trace_file, param_values)
     cleanup()

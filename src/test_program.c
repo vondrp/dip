@@ -25,6 +25,18 @@ void compute(int a, int b) {
     printf("Konec compute funkce");
 }
 
+void cycle(int a) {  // 4 instrukcí
+    a = a + 10;  // 1 instrukcí
+
+    a +=10;  // 1 instrukcí
+    a = a + 10;  // 1 instrukcí
+    
+    for (int i = 0; i < 5; i++) {  // 2 instrukcí
+        a = a + 10;
+    }
+}  // 4 instrukcí
+
+
 
 #ifndef MAIN_DEFINED
 int main(int argc, char *argv[]) {

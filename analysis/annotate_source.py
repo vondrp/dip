@@ -2,7 +2,9 @@ import json
 import os
 
 # Cesty k souborům
-INSTRUCTIONS_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions.json")
+#INSTRUCTIONS_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions.json")
+INSTRUCTIONS_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions_cycle_5.json")
+
 
 def load_instruction_data():
     """ Načte JSON soubor s instrukcemi """
