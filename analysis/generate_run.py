@@ -1,10 +1,36 @@
 import os
 import re
 import subprocess
+import glob
 
+SRC_DIR = os.path.join(os.path.dirname(__file__), "..", "src")
 SRC_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "test_program.c")
 GENERATED_MAIN = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main.c")
 GDB_SCRIPT = os.path.join(os.path.dirname(__file__), "..", "gdb", "gdb_trace.py")
+
+
+def find_dependencies(source_file):
+    """Najde všechny soubory, které `source_file` přímo includuje."""
+    dependencies = set()
+    with open(source_file, "r") as f:
+        for line in f:
+            match = re.match(r'#include\s+"(.+?)"', line)
+            if match:
+                dependencies.add(match.group(1))  # Uložíme název hlavičkového souboru
+    return dependencies
+
+def map_headers_to_sources():
+    """Najde `.c` soubor pro každou `.h` hlavičku ve složce `src/`."""
+    source_files = glob.glob(os.path.join(SRC_DIR, "*.c"))
+    header_to_source = {}
+
+    for src_file in source_files:
+        base_name = os.path.splitext(os.path.basename(src_file))[0]
+        header_file = f"{base_name}.h"
+        header_to_source[header_file] = src_file  # Mapujeme `.h` → `.c`
+
+    return header_to_source
+
 
 def extract_functions_and_params(source_file):
     """Najde definice funkcí a jejich parametry v souboru."""
@@ -22,7 +48,7 @@ def generate_main(target_function, params):
     """Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky."""
     with open(GENERATED_MAIN, "w") as f:
         f.write('#include <stdio.h>\n#include <stdlib.h>\n')
-        f.write('#define MAIN_DEFINED\n')  # Zabrání překladu původního main()
+        f.write('#define MAIN_DEFINED\n')
         f.write('#include "test_program.c"\n\n')
 
         f.write("int main(int argc, char *argv[]) {\n")
@@ -44,9 +70,17 @@ def generate_main(target_function, params):
         f.write(f"    {target_function}({', '.join(converted_params)});\n")
         f.write("    return 0;\n}\n")
 
+
 def compile(binary_file):
-    """Přeloží `generated_main.c` do binárního souboru."""
-    compile_cmd = ["gcc", "-g", "-o", binary_file, GENERATED_MAIN]
+    """Přeloží pouze potřebné `.c` soubory pro `generated_main.c`."""
+    needed_headers = find_dependencies(SRC_FILE)
+    header_to_source = map_headers_to_sources()
+
+    # Najdeme odpovídající `.c` soubory
+    needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
+    needed_sources.add(GENERATED_MAIN)  # Vždy přidáme `generated_main.c`
+
+    compile_cmd = ["gcc", "-g", "-o", binary_file] + list(needed_sources)
     print(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
 

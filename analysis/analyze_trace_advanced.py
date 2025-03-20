@@ -5,7 +5,7 @@ import subprocess
 import json
 
 # Název testované funkce
-TARGET_FUNCTION = "X"
+TARGET_FUNCTION = "compute"
 
 # TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace.log")
 # BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary")
@@ -27,9 +27,18 @@ TARGET_FUNCTION = "X"
 #BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary_A_5")
 #OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions_A_5.json")
 
-TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace_X_8.log")
-BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary_X_8")
-OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions_X_8.json")
+#TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace_X_8.log")
+#BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary_X_8")
+#OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions_X_8.json")
+
+#TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace_external_call_.log")
+#BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary_external_call_")
+#OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions_external_call_.json")
+
+TRACE_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "trace_compute_10_0.log")
+BINARY_FILE = os.path.join(os.path.dirname(__file__), "..", "build", "test_binary_compute_10_0")
+OUTPUT_FILE = os.path.join(os.path.dirname(__file__), "..", "logs", "instructions_compute_10_0.json")
+
 
 SOURCE_FILE = os.path.join(os.path.dirname(__file__), "..", "src", "test_program.c")
 
@@ -131,7 +140,7 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target):
     """Analyzuje logovací soubor a extrahuje instrukce pro `TARGET_FUNCTION`."""
     source_line_counts = collections.defaultdict(int)
     inside_target_function = False
-    last_call_source_line = None
+    last_executed_line = None
     
     with open(file_path, "r") as f:
         line = f.readline()
@@ -145,23 +154,22 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target):
                 match = re.match(r"\w+,\s+(0x[0-9a-fA-F]+):\s+(\w+)", line)
                 if match:
                     address, instruction = match.groups()
-                    source_line = get_source_line(BINARY_FILE, address, runtime_addr_target, static_addr_target)
+                    last_executed_line = get_source_line(BINARY_FILE, address, runtime_addr_target, static_addr_target)
                     
-                    if source_line:
-                        source_line_counts[source_line] += 1
+                    if last_executed_line:
+                        source_line_counts[last_executed_line] += 1
                     
                     # volani funkci uvnitr testovane funkce
                     call_match = re.match(r".*call\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
                     if call_match:
                         called_function = call_match.group(2)
-                        last_call_source_line = source_line
-                        print(f"[DEBUG] Detekováno volání `{called_function}` na řádku `{source_line}`")
+                        print(f"[DEBUG] Detekováno volání `{called_function}` na řádku `{last_executed_line}`")
                         
                         call_instruction_count, last_read_line = count_function_instructions(f, called_function, TARGET_FUNCTION)    
                     
-                        if last_call_source_line:
+                        if last_executed_line:
                             print(f"[DEBUG] Počet instrukcí pro `{called_function}`: {call_instruction_count}")
-                            source_line_counts[last_call_source_line] += call_instruction_count
+                            source_line_counts[last_executed_line] += call_instruction_count
                         
                         if last_read_line:
                             line = last_read_line
@@ -174,18 +182,28 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target):
             line = f.readline()
 
     source_line_counts = normalize_discriminators(source_line_counts)
+
+    if inside_target_function == True:
+         crash_detected = inside_target_function 
+         print(f"[WARNING] Detekováno náhlé ukončení programu! Poslední řádek: `{last_executed_line}`")
+
     print(f"[INFO] Celkem instrukcí ve `{TARGET_FUNCTION}`: {sum(source_line_counts.values())}")
-    return source_line_counts
+    return source_line_counts, crash_detected, last_executed_line
 
 
 
-def save_json(source_line_counts):
+def save_json(source_line_counts, crash_detected, crash_last_executed_line):
     """Uloží výsledky analýzy do JSON souboru."""
     json_data = {
         "source_file": SOURCE_FILE,
         "instructions": source_line_counts
     }
     
+    # Přidáme info o havárii, pokud byla detekována
+    if crash_detected:
+        json_data["crash_detected"] = True
+        json_data["crash_last_executed_line"] = crash_last_executed_line
+
     with open(OUTPUT_FILE, "w") as f:
         json.dump(json_data, f, indent=4)
     
@@ -204,8 +222,8 @@ def main():
     print(f"[INFO] Statická adresa `{TARGET_FUNCTION}`: {hex(static_addr_target)}")
     print(f"[INFO] Runtime adresa `{TARGET_FUNCTION}`: {hex(runtime_addr_target)}")
     
-    source_line_counts = parse_trace(TRACE_FILE, runtime_addr_target, static_addr_target)
-    save_json(source_line_counts)
+    source_line_counts, crash_detected, last_executed_line = parse_trace(TRACE_FILE, runtime_addr_target, static_addr_target)
+    save_json(source_line_counts, crash_detected, last_executed_line)
     print(f"[INFO] Analýza `{TARGET_FUNCTION}` dokončena!")
 
 if __name__ == "__main__":

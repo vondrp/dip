@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include "helper.h"
 
 // 🔹 Funkce, která se nikdy nezavolá
 void unused_function() {
@@ -14,27 +15,27 @@ void logic_branch(int x) {
     }
 } 
 
-void compute(int a, int b) {
-    if (a == 42) {
+void compute(int a, int b) {  // Celkem: 6 instrukcí
+    if (a == 42) {  // Celkem: 2 instrukcí
         printf("Tajná větev odhalena! a=%d\n", a);
     }
-    if (b == 0) {
-        printf("Chyba: dělení nulou!\n");
-        int x = 1 / b;
+    if (b == 0) {  // Celkem: 2 instrukcí
+        printf("Chyba: dělení nulou!\n");  // Celkem: 150 instrukcí
+        int x = 1 / b;  // Celkem: 4 instrukcí | ⚠ CRASH DETECTED! ⚠
     }
     printf("Konec compute funkce");
 }
 
-void cycle(int a) {  // initialization: Celkem: 4 instrukcí / Iterací: 1×
-    a = a + 10;  // initialization: Celkem: 1 instrukcí / Iterací: 1×
+void cycle(int a) {
+    a = a + 10;
 
-    a +=10;  // initialization: Celkem: 1 instrukcí / Iterací: 1×
-    a = a + 10;  // initialization: Celkem: 1 instrukcí / Iterací: 1×
-    
-    for (int i = 0; i < 5; i++) {  // initialization: Celkem: 2 instrukcí / Iterací: 1× | discriminator 1: Celkem: 12 instrukcí / Iterací: 3× | discriminator 3: Celkem: 5 instrukcí / Iterací: 3×
-        a = a + 10;  // discriminator 3: Celkem: 5 instrukcí / Iterací: 1×
+    a +=10;
+    a = a + 10;
+
+    for (int i = 0; i < 5; i++) {
+        a = a + 10;
     }
-}  // initialization: Celkem: 4 instrukcí / Iterací: 1×
+}
 
 
 void recurse(int n) {  
@@ -74,6 +75,10 @@ void Z(int n) {
     X(n - 1);  // Volání X()
 }
 
+void external_call() {  // Celkem: 3 instrukcí
+    printf("Volám externí funkci z helper.c\n");  // Celkem: 159 instrukcí
+    helper_function();  // Celkem: 167 instrukcí
+}  // Celkem: 3 instrukcí
 
 #ifndef MAIN_DEFINED
 int main(int argc, char *argv[]) {
