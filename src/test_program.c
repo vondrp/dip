@@ -2,6 +2,11 @@
 #include <stdlib.h>
 #include "helper.h"
 
+#include "test_program.h"
+#include "helper1.h"
+#include "helper2.h"
+#include "helper3.h"
+
 // 🔹 Funkce, která se nikdy nezavolá
 void unused_function() {
     printf("Tato funkce se nikdy neprovede!\n");
@@ -80,6 +85,67 @@ void external_call() {  // Celkem: 3 instrukcí
     helper_function();  // Celkem: 167 instrukcí
 }  // Celkem: 3 instrukcí
 
+
+int angrT(int a, double b, char c) {
+
+    if (b > 5.5) {
+        return 0;
+    }
+
+    if (c == 'c') {
+        return 1;
+    }
+
+    if (a > 50) {
+        return 2;
+    }
+
+    return 3;
+}
+
+int compute_ret(int a, int b) {
+    if (a == 42) {
+        return a / 2;
+    }
+    if (b == 0) {
+        int x = 1 / b;
+        return x;
+    }
+    return (a + b);
+}
+
+
+// Funkce compute() volá další funkce a obsahuje větve, cykly atd.
+int compute_adv(int a, int b) {
+    int result = 0;
+
+    printf("Start compute: a=%d, b=%d\n", a, b);
+
+    // Podmíněné větvení
+    if (a > b) {
+        result += add(a, b);
+    } else if (a < b) {
+        result += multiply(a, b);
+    } else {
+        result += power(a, 2);
+    }
+
+    // Cyklus (počítá součet čísel od 0 do a)
+    for (int i = 0; i < a; i++) {
+        result += i;
+    }
+
+    // Volání rekurzivní funkce (faktoriál)
+    result += factorial(a % 5);
+
+    // Volání funkce se switch-case
+    result += switch_test(a);
+
+    printf("End compute: result=%d\n", result);
+    return result;
+}
+
+/*
 #ifndef MAIN_DEFINED
 int main(int argc, char *argv[]) {
     int a = 10, b = 2;
@@ -94,4 +160,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-#endif
+#endif*/
