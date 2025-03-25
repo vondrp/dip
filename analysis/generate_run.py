@@ -2,6 +2,8 @@ import os
 import re
 import subprocess
 import glob
+import time
+import shutil
 
 from concolic_test_klee import get_klee_test_inputs
 from analyze_trace_advanced import analyze_traces_in_folder
@@ -13,8 +15,12 @@ GENERATED_MAIN = os.path.join(os.path.dirname(__file__), "..", "src", "generated
 GENERATED_MAIN_ANGR = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main_angr.c")
 GENERATED_MAIN_KLEE = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main_klee.c")
 
-GDB_SCRIPT = os.path.join(os.path.dirname(__file__), "..", "gdb", "gdb_trace.py")
+ARM_START = os.path.join(os.path.dirname(__file__), "..", "src", "startup.s")
+ARM_LINKER = os.path.join(os.path.dirname(__file__), "..", "src", "linker.ld")
 
+
+GDB_SCRIPT = os.path.join(os.path.dirname(__file__), "..", "gdb", "gdb_trace.py")
+GDB_SCRIPT_ARM_BM = os.path.join(os.path.dirname(__file__), "..", "gdb", "gdb_trace_bare_arm.py")
 
 # Definice cesty ke složce pro KLEE
 KLEE_BUILD_DIR = os.path.join(os.path.dirname(__file__), "..", "build", "klee")
@@ -156,22 +162,48 @@ def generate_main(target_function, params):
         f.write(f"    {target_function}({', '.join(converted_params)});\n")
         f.write("    return 0;\n}\n")
 
-def compile_angr(binary_file):
-    """Přeloží program optimalizovaný pro Angr."""
-    needed_headers = find_dependencies(SRC_FILE)
-    header_to_source = map_headers_to_sources()
+def generate_main_arm(target_function, params):
+    """Vytvoří `generated_main_arm.c` přizpůsobený pro bare-metal ARM."""
 
-    # Najdeme odpovídající `.c` soubory
-    needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
-    needed_sources.add(GENERATED_MAIN_ANGR)  # Speciální main pro Angr
+    generate_main_file = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main_arm.c")
 
-    compile_cmd = [
-        "gcc", "-g", "-O0", "-fno-omit-frame-pointer", "-fno-strict-aliasing", "-no-pie",
-        "-o", binary_file
-    ] + list(needed_sources)
+    with open(generate_main_file , "w") as f:
+        f.write('#include <stdint.h>\n')  # Použití stdint.h místo stdlib.h
+        f.write('#include "arm_test_program.h"\n\n')
 
-    print(f"[INFO] Kompiluji pro Angr: {' '.join(compile_cmd)}")
-    subprocess.run(compile_cmd, check=True)
+        # Simulovaná výstupní funkce pro bare-metal (nahradí printf)
+        f.write("void arm_print(const char *msg) {\n")
+        f.write('    volatile char *uart = (volatile char *)0x09000000; // UART na QEMU\n')
+        f.write('    while (*msg) *uart = *(msg++);\n')
+        f.write("}\n\n")
+
+        # Hlavní funkce (nebude vracet int, protože běžně na ARM bez OS není návratová hodnota)
+        f.write("void main() {\n")
+
+        f.write(f'    arm_print("Spouštím test funkce: {target_function}\\n");\n')
+
+        converted_params = []
+        for i, param in enumerate(params):
+            param_type = param.split()[0]
+            var_name = f"param_{i}"
+
+            if "int" in param_type:
+                f.write(f"    int {var_name} = {i * 10 + 1};  // Testovací hodnota\n")
+            elif "float" in param_type or "double" in param_type:
+                f.write(f"    {param_type} {var_name} = {i * 0.5 + 1.0};\n")
+            elif "char" in param_type:
+                f.write(f"    char {var_name} = 'A' + {i};\n")
+            else:
+                f.write(f"    {param_type} {var_name};  // U neznámých typů neinicializujeme\n")
+
+            converted_params.append(var_name)
+
+        f.write(f"    {target_function}({', '.join(converted_params)});\n")
+        f.write("    while (1); // Nekonečná smyčka (běžné u bare-metal aplikací)\n")
+        f.write("}\n")
+
+    print(f"[INFO] ✅ Vygenerován `generated_main_arm.c` pro ARM bare-metal.")
+    return generate_main_file 
 
 
 def compile_klee(klee_dir, src_file):
@@ -218,38 +250,9 @@ def compile_klee(klee_dir, src_file):
 
 
 
-def compile_klee_old(klee_dir):
-    """Přeloží program pro použití s KLEE a uloží výstup do `build/klee/`."""
-    main_bc = os.path.join(klee_dir, "generated_main_klee.bc")
-    test_bc = os.path.join(klee_dir, "test_program.bc")
-    linked_bc = os.path.join(klee_dir, "klee_program.bc")
-
-    print(f"[INFO] 📂 Vytvářím KLEE build: {klee_dir}")
-    print(f"[INFO] Generovaný LLVM bitcode pro main: {main_bc}")
-    print(f"[INFO] Generovaný LLVM bitcode pro test_program: {test_bc}")
-
-    # Překlad `generated_main_klee.c`
-    subprocess.run([
-        "clang-13", "-emit-llvm", "-g", "-c",
-        "-I/home/vondrp/manualKlee/klee/include",  # Cesta ke klee.h
-        GENERATED_MAIN_KLEE, "-o", main_bc
-    ], check=True)
-
-    # Překlad `test_program.c`
-    subprocess.run([
-        "clang-13", "-emit-llvm", "-g", "-c",
-        "-DMAIN_DEFINED",
-        SRC_FILE, "-o", test_bc
-    ], check=True)
-
-    # Spojení `.bc` souborů do jednoho
-    subprocess.run(["llvm-link-13", main_bc, test_bc, "-o", linked_bc], check=True)
-
-    print(f"[INFO] ✅ Spojený LLVM bitcode: {linked_bc}")
-
-def compile(binary_file):
+def compile(binary_file, src_file):
     """Přeloží pouze potřebné `.c` soubory pro `generated_main.c`."""
-    needed_headers = find_dependencies(SRC_FILE)
+    needed_headers = find_dependencies(src_file)
     header_to_source = map_headers_to_sources()
 
     # Najdeme odpovídající `.c` soubory
@@ -258,6 +261,44 @@ def compile(binary_file):
 
     compile_cmd = ["gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
     print(f"Kompiluji: {' '.join(compile_cmd)}")
+    subprocess.run(compile_cmd, check=True)
+
+def compile_for_arm(binary_file, src_file, generated_main_file):
+    """ Přeloží program pro ARM bare-metal """
+    needed_sources = [
+        generated_main_file,
+        ARM_START,  # startup.s
+        src_file
+    ]
+
+    # Kompilace bez standardních knihoven
+    compile_cmd = [
+        "arm-none-eabi-gcc", "-g", "-fno-omit-frame-pointer", "-ffreestanding",
+        "-nostdlib", "-nostartfiles", "-T", ARM_LINKER,
+        "-o", binary_file
+    ] + needed_sources
+
+    print(f"[INFO] 🛠 Kompiluji pro ARM: {' '.join(compile_cmd)}")
+    subprocess.run(compile_cmd, check=True)
+
+
+def compile_for_armv1(binary_file, src_file, generated_main_file):
+    """ Přeloží program pro ARM """
+    needed_headers = find_dependencies(src_file)
+    header_to_source = map_headers_to_sources()
+
+    # Najdeme odpovídající `.c` soubory
+    needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
+    needed_sources.add(generated_main_file)  # Vždy přidáme `generated_main.c`
+    needed_sources.add(ARM_START)
+    #arm-linux-gnueabihf-gcc  GCC pro linux ARM
+    compile_cmd = [
+        "arm-none-eabi-gcc", "-g", "-fno-omit-frame-pointer", "-ffreestanding",
+        "-nostdlib", "-nostartfiles",  "-T", ARM_LINKER,
+        "-o", binary_file
+    ] + list(needed_sources)
+
+    print(f"[INFO] 🛠 Kompiluji pro ARM: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
 
 
@@ -272,6 +313,81 @@ def run_gdb_trace(binary_file, trace_file, args):
     ]
     print(f"Spouštím GDB: {' '.join(gdb_cmd)}")
     subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+def run_gdb_trace_arm_bm(binary_file, trace_file, args):
+    """ Spustí ARM binárku v QEMU, připojí GDB a spustí trace skript. """
+
+     # 🔹 Ověření dostupnosti QEMU-system-arm
+    qemu_executable = shutil.which("qemu-system-arm")
+    if not qemu_executable:
+        raise FileNotFoundError("[ERROR] ❌ `qemu-system-arm` nebyl nalezen. Zkontrolujte instalaci.")
+
+    # 🔹 Ověření dostupnosti GDB pro ARM
+    gdb_executable = shutil.which("arm-none-eabi-gdb") or shutil.which("gdb-multiarch")
+    if not gdb_executable:
+        raise FileNotFoundError("[ERROR] ❌ `arm-none-eabi-gdb` nebo `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
+
+    # 🔹 1️⃣ Spustíme QEMU v GDB server módu (zastaveno na startu)
+    """
+    qemu_cmd = [
+        qemu_executable,
+        "-M", "virt",            # Virtuální ARM platforma
+        "-cpu", "cortex-a15",     # CPU model
+        "-m", "128M",            # Nastavení paměti
+        "-nographic",            # Konzolový mód
+        "-L", "/home/vondrp/buildroot/output/host/share/qemu", 
+        "-bios", "efi-virtio.rom",
+        "-kernel", binary_file,   # Použití binárního souboru jako kernelu
+        "-gdb", "tcp::1234",      # Otevření GDB serveru na portu 1234
+        "-S"                     # Zastavení před startem
+    ]
+    """
+    qemu_cmd = [
+    qemu_executable,
+    "-M", "virt",            # Virtuální ARM platforma
+    "-cpu", "cortex-a15",     # CPU model
+    "-m", "128M",            # Nastavení paměti
+    "-nographic",            # Konzolový mód
+     "-L", "/home/vondrp/buildroot/output/host/share/qemu", 
+    "-bios", "efi-virtio.rom",
+    "-kernel", binary_file,
+    "-append", "console=ttyAMA0",  # Simulace konzole
+    "-gdb", "tcp::1234",      # Otevře GDB server na portu 1234
+    "-S"                     # Zastaví před spuštěním
+    ]
+
+    print(f"[INFO] 🚀 Spouštím QEMU: {' '.join(qemu_cmd)}")
+    qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+
+    # Počkáme, než se QEMU inicializuje
+    time.sleep(10)
+    print(f"[INFO] gdb binary file: {binary_file}")
+    # 🔹 3️⃣ Spustíme GDB pro ARM
+    gdb_cmd = [
+        gdb_executable, "-q",
+        "-ex", "set pagination off",
+        "-ex", "set confirm off",
+        "-ex", "set architecture arm",
+        "-ex", f"file {binary_file}",
+        "-ex", "target remote localhost:1234",
+        "-ex", "set $pc = 0x8000",   
+        "-ex", "set $sp = 0x810000",
+        "-ex", "info registers",      # Výpis registrů pro kontrolu
+        "-ex", f"source {GDB_SCRIPT_ARM_BM}",
+        "-ex", "starti",
+        "-ex", f"trace-asm-arm {trace_file}",
+        "-ex", "quit"
+    ]
+
+    print(f"[INFO] 🛠 Spouštím GDB: {' '.join(gdb_cmd)}")
+    subprocess.run(gdb_cmd, check=True)
+
+    # 🔹 4️⃣ Ukončíme QEMU po dokončení trace
+    qemu_proc.terminate()
+    print("[INFO] ✅ Trace dokončen, QEMU ukončen.")
+
 
 def cleanup():
     """Odstraní `generated_main.c`."""
@@ -319,9 +435,9 @@ def run_klee_analysis(target_function, functions, param_types, klee_dir, src_fil
     print(f"[INFO] 📁 Testovací vstupy uloženy: {file_path}")
     return test_data
 
-def compile_and_trace(target_function, functions, param_values, param_str, trace_dir, binary_file):
+def compile_and_trace(target_function, functions, param_values, param_str, trace_dir, binary_file, src_file):
     generate_main(target_function, functions[target_function])
-    compile(binary_file)
+    compile(binary_file, src_file)
     
     trace_file_user = os.path.join(trace_dir, f"trace_{target_function}_{param_str}.log")
     run_gdb_trace(binary_file, trace_file_user, param_values)
@@ -339,6 +455,31 @@ def analyze_results(trace_dir, binary_file, target_function):
     analyze_traces_in_folder(trace_dir, analysis_output_dir, binary_file, target_function)
     compare_runs(analysis_output_dir)
 
+def main_logic_arm():
+    """ Vygeneruje `generated_main.c`, přeloží pro ARM a spustí trace pomocí QEMU. """
+    src_file = os.path.join(os.path.dirname(__file__), "..", "src", "arm_test_program.c")
+    target_function, param_types, functions = select_target_function(src_file)
+
+    param_values = []
+    for param in functions[target_function]:
+        value = input(f"Zadej hodnotu pro `{param}`: ")
+        param_values.append(value)
+    param_str = "_".join(param_values).replace(" ", "")
+
+    # 🔹 Vytvoření složky pro výsledky
+    trace_dir = os.path.join(os.path.dirname(__file__), "..", "logs_ARM", target_function)
+    os.makedirs(trace_dir, exist_ok=True)
+
+    arm_binary = os.path.join(os.path.dirname(__file__), "..", "build", f"test_ARM_{target_function}_{param_str}")
+
+    generate_main_file = generate_main_arm(target_function, functions[target_function])
+    compile_for_arm(arm_binary, src_file, generate_main_file)
+    
+    trace_file_user = os.path.join(trace_dir, f"trace_ARM_{target_function}_{param_str}.log")
+    
+    run_gdb_trace_arm_bm(arm_binary, trace_file_user, param_values)
+
+
 def main_logic():
     src_file = os.path.join(os.path.dirname(__file__), "..", "src", "test_program.c")
     target_function, param_types, functions = select_target_function(src_file)
@@ -350,13 +491,14 @@ def main_logic():
     param_str = "_".join(param_values).replace(" ", "")
     
     trace_dir, klee_dir = prepare_directories(target_function)
-    test_data = run_klee_analysis(target_function, functions, param_types, klee_dir, SRC_FILE)
+    test_data = run_klee_analysis(target_function, functions, param_types, klee_dir, src_file)
     
     binary_file = os.path.join(os.path.dirname(__file__), "..", "build", f"test_{target_function}_{param_str}")
-    compile_and_trace(target_function, functions, param_values, param_str, trace_dir, binary_file)
+    compile_and_trace(target_function, functions, param_values, param_str, trace_dir, binary_file, src_file)
     run_klee_traces(binary_file, test_data, trace_dir, target_function)
     analyze_results(trace_dir, binary_file, target_function)
     cleanup()
 
 if __name__ == "__main__":
     main_logic()
+    #main_logic_arm()
