@@ -49,8 +49,6 @@ void recurse(int n) {
     recurse(n - 1);  
 }
 
-void B(int n);
-
 
 void A(int n) {
     if (n <= 0) return;  // Zastavení rekurze
@@ -61,9 +59,6 @@ void B(int n) {
     if (n <= 0) return;  // Zastavení rekurze
     A(n - 1);  // Nepřímá rekurze voláním A()
 }
-
-void Y(int n);
-void Z(int n);
 
 void X(int n) {
     if (n <= 0) return;  // Zastavení rekurze
@@ -144,6 +139,14 @@ int compute_adv(int a, int b) {
     printf("End compute: result=%d\n", result);
     return result;
 }
+
+int logic_ARM(int x) {
+    if (x > 100) {
+        return 1;
+    } else {
+        return 0;
+    }
+} 
 
 /*
 #ifndef MAIN_DEFINED
