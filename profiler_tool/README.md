@@ -80,3 +80,5 @@ Pokud se cesty neaktualizují správně, je možné upravit konstanty v souboru 
 ## Instalace dalších věcí:
 gdb: gdb --version
 sudo apt install gdb
+
+sudo apt install fzf

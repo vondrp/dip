@@ -79,6 +79,7 @@ def extract_gdb_inputs(klee_out_dir, raw_ktest_path, param_types):
     test_cases = []
     current_case = {}
 
+    print(f"PARAMETRY typy {param_types}")
     with open(raw_ktest_path, "r") as f:
         for line in f:
             param_match = re.match(r"object \d+: name: 'param_(\d+)'", line)

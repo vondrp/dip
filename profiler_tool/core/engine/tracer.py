@@ -1,3 +1,9 @@
+import shutil
+import subprocess
+
+from core.config import GDB_SCRIPT
+
+
 def run_gdb_trace(binary_file, trace_file, args):
     """Spustí GDB s vybranými parametry a zachytí instrukce do `trace.log`."""
     gdb_cmd = [

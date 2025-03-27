@@ -1,14 +1,24 @@
 import os
 
-from core.config import GENERATED_MAIN, GENERATED_MAIN_KLEE
+from core.config import set_generated_main_path, get_generated_main_path
+from core.config import set_generated_main_klee_path, get_generated_main_klee_path
 
 
-def generate_main_klee(target_function, params):
+
+def generate_main_klee(target_function, params, header_file):
+
+    generated_main_klee_path = os.path.join(os.path.dirname(header_file), "generated_main_klee.c")
+    set_generated_main_klee_path(generated_main_klee_path)
+
+    header_filename = os.path.basename(header_file)
+
     """Vytvoří `generated_main_klee.c` pro analýzu s KLEE."""
-    with open(GENERATED_MAIN_KLEE, "w") as f:
+    with open(generated_main_klee_path, "w") as f:
         f.write('#include <klee/klee.h>\n')
         f.write('#include <stdio.h>\n\n')
-        f.write(f'extern void {target_function}({", ".join(params)});\n\n')
+        f.write(f'#include "{header_filename}"\n\n')
+
+        #f.write(f'extern void {target_function}({", ".join(params)});\n\n')
 
         f.write("int main() {\n")
 
@@ -76,12 +86,17 @@ def generate_main_angr(target_function, params):
 
         f.write("    return 0;\n}\n")
 
-def generate_main(target_function, params):
+def generate_main(target_function, params, header_file):
     """Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky."""
-    with open(GENERATED_MAIN, "w") as f:
+
+    generated_main_path = os.path.join(os.path.dirname(header_file), "generated_main.c")
+    header_filename = os.path.basename(header_file)
+    set_generated_main_path(generated_main_path)
+
+    with open(generated_main_path, "w") as f:
         f.write('#include <stdio.h>\n#include <stdlib.h>\n')
         f.write('#define MAIN_DEFINED\n')
-        f.write('#include "test_program.h"\n\n')
+        f.write(f'#include "{header_filename}"\n\n')
 
         f.write("int main(int argc, char *argv[]) {\n")
         f.write("    if (argc < %d) {\n" % (len(params) + 1))

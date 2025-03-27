@@ -3,8 +3,7 @@ import glob
 import re
 import subprocess
 
-
-from core.config import GENERATED_MAIN, GENERATED_MAIN_KLEE
+from core.config import get_generated_main_path, get_generated_main_klee_path
 
 
 def find_dependencies(source_file):
@@ -34,6 +33,8 @@ def map_headers_to_sources(src_dir):
 def compile_klee(klee_dir, src_file, src_dir):
     """Přeloží program pro použití s KLEE a uloží výstup do `klee_dir`."""
     
+    generated_main_klee = get_generated_main_klee_path()
+
     main_bc = os.path.join(klee_dir, "generated_main_klee.bc")
     linked_bc = os.path.join(klee_dir, "klee_program.bc")
 
@@ -52,7 +53,7 @@ def compile_klee(klee_dir, src_file, src_dir):
     subprocess.run([
         "clang-13", "-emit-llvm", "-g", "-c",
         "",  # Cesta ke klee.h
-        GENERATED_MAIN_KLEE, "-o", main_bc
+        generated_main_klee, "-o", main_bc
     ], check=True)
 
     # Překlad všech potřebných souborů
@@ -82,7 +83,7 @@ def compile_x86(binary_file, src_file, src_dir):
 
     # Najdeme odpovídající `.c` soubory
     needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
-    needed_sources.add(GENERATED_MAIN)  # Vždy přidáme `generated_main.c`
+    needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
     compile_cmd = ["gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
     print(f"Kompiluji: {' '.join(compile_cmd)}")
