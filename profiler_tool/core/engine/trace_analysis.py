@@ -154,7 +154,6 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
     return source_line_counts, crash_detected, last_executed_line
 
 
-
 def save_json(source_line_counts, crash_detected, crash_last_executed_line, json_output_path, function_name, params_str, source_file):
     """Uloží výsledky analýzy do JSON souboru."""
     formatted_params = params_str.replace("_", " ")
@@ -260,5 +259,9 @@ def analyze_trace(trace_file, binary_file, target_function, output_json):
     match = re.match(rf"trace_{re.escape(target_function)}_(.*)\.log", os.path.basename(trace_file))
     params_str = match.group(1) if match else "unknown"
 
-    save_json(source_line_counts, crash_detected, last_executed_line, output_json, target_function, params_str, binary_file)
+    # Získání source_file z prvního záznamu v source_line_counts
+    first_line_key = next(iter(source_line_counts))  # Získání prvního klíče
+    source_file = first_line_key.split(":")[0]  # Extrahování souboru z prvního klíče
+
+    save_json(source_line_counts, crash_detected, last_executed_line, output_json, target_function, params_str, source_file)
     print(f"[INFO] ✅ Analýza `{trace_file}` dokončena a výsledky uloženy do `{output_json}`.")    

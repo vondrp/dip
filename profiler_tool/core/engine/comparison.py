@@ -2,20 +2,28 @@ import os
 import json
 from collections import defaultdict
 
+from core.config import ANALYSIS_DIR
+
+
 # Konstanta pro složku s JSON soubory
 default_analysis_folder = os.path.join(os.path.dirname(__file__), "..", "logs", "compute", "analysis")
 output_file = os.path.join(default_analysis_folder, "comparison_report.txt")
 
-def load_json_files(folder_path):
-    """Načte všechny JSON soubory ve složce a vrátí seznam jejich dat."""
+def load_json_files(file_paths):
+    """Načte všechny JSON soubory a vrátí seznam jejich dat."""
     data = []
-    for file_name in os.listdir(folder_path):
-        if file_name.endswith(".json"):
-            file_path = os.path.join(folder_path, file_name)
-            with open(file_path, "r") as f:
+    
+    for file_path in file_paths:
+        if not file_path.endswith(".json"):
+            continue
+        with open(file_path, "r") as f:
+            try:
                 content = json.load(f)
-                content["file_name"] = file_name  # Přidáme název souboru
+                content["file_name"] = os.path.basename(file_path)  # Přidáme název souboru
                 data.append(content)
+            except json.JSONDecodeError:
+                print(f"❌ Chyba při čtení {file_path}, soubor není validní JSON.")
+
     return data
 
 def analyze_instruction_counts(data):
@@ -90,14 +98,23 @@ def generate_report(data, output_file):
     
     print(f"[INFO] Report uložen do {output_file}")
 
-def compare_runs(folder_path):
-    """Porovná běhy funkcí na základě JSON souborů v dané složce."""
-    data = load_json_files(folder_path)
+
+def compare_runs(folder=None, files=None):
+    """Porovná běhy funkcí na základě JSON souborů ve složce nebo vybraných souborů."""
+    if folder:
+        json_files = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".json")]
+    elif files:
+        json_files = files
+    else:
+        print("[ERROR] Nebyly nalezeny žádné JSON soubory k porovnání.")
+        return
+
+    data = load_json_files(json_files)
     if not data:
-        print(f"[ERROR] Nebyly nalezeny žádné JSON soubory ve složce {folder_path}")
+        print(f"[ERROR] Nebyly nalezeny žádné platné JSON soubory.")
         return
     
-    output_file = os.path.join(folder_path, "comparison_report.txt")
+    output_file = os.path.join(folder if folder else ANALYSIS_DIR, "comparison_report.txt")
     generate_report(data, output_file)
 
 def main():

@@ -1,7 +1,7 @@
 import os
 import re
 
-from core.config import BASE_DIR
+from core.config import BUILD_DIR
 from core.engine.generator import generate_main, generate_main_klee, generate_main_arm
 from core.engine.compiler import compile_x86, compile_klee, compile_arm_bm
 from core.engine.tracer import run_gdb_trace, run_gdb_trace_arm_bm
@@ -122,7 +122,7 @@ def main():
     
     # 3️⃣ Generování main souborů a kompilace
     generate_main(target_function, functions[target_function], header_file=header_file)
-    binary_file = os.path.join(BASE_DIR, "build", f"test_{target_function}_{param_str}")
+    binary_file = os.path.join(BUILD_DIR, f"test_{target_function}_{param_str}")
     compile_x86(binary_file=binary_file, src_file=src_file, src_dir = src_dir)
     
     # 4️⃣ Spuštění KLEE a získání testovacích vstupů
