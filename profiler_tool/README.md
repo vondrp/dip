@@ -82,3 +82,32 @@ gdb: gdb --version
 sudo apt install gdb
 
 sudo apt install fzf
+
+
+# Instalace rozšíření visual studio code
+Instalace Node.js a npm 
+sudo apt install nodejs npm
+
+ověření: 
+node -v
+npm -v
+
+(může být staršý verze - např. ubuntu 22.04 nainstalovalo verzi node v12 (nedostačující))
+- takhel se uíská nová
+curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+source ~/.bashrc
+nvm install --lts
+nvm use --lts
+
+Nejprve si nainstaluj Yeoman a generator pro VS Code rozšíření:
+npm install -g yo generator-code
+
+(Tento balíček ti pomůže vygenerovat základní strukturu rozšíření.)
+
+
+npm install --save-dev sinon @types/sinon
+
+
+sudo apt-get install libnss3
+
+sudo apt-get install libasound2

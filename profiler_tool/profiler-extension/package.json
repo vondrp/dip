@@ -1,0 +1,53 @@
+{
+  "name": "profiler-extension",
+  "displayName": "Profiler Control",
+  "description": "VSCode extension for controlling and visualizing profiler tool results, including line highlighting and crash detection.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.98.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:profiler-extension.selectJson"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "profiler-extension.helloWorld",
+        "title": "Hello World"
+      },
+      {
+        "command": "profiler-extension.selectJson",
+        "title": "Select JSON File for Profiling"
+      },
+      {
+        "command": "profiler-extension.highlightCode",
+        "title": "Highlight Code from JSON"
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "20.x",
+    "@types/sinon": "^17.0.4",
+    "@types/vscode": "^1.98.0",
+    "@typescript-eslint/eslint-plugin": "^8.28.0",
+    "@typescript-eslint/parser": "^8.28.0",
+    "@vscode/test-cli": "^0.0.10",
+    "@vscode/test-electron": "^2.4.1",
+    "eslint": "^9.23.0",
+    "sinon": "^20.0.0",
+    "typescript": "^5.8.2"
+  }
+}
