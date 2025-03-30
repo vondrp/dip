@@ -6,20 +6,17 @@ BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 # Adresář pro buildy
 BUILD_DIR = os.path.join(BASE_DIR, "build")
 
-# Adresář pro buildy KLEE
-KLEE_BUILD_DIR = os.path.join(BASE_DIR, "build", "klee")
-
 # Adresář logů
 LOGS_DIR = os.path.join(BASE_DIR, "logs")
 
 # Adresář trace
 TRACE_DIR = os.path.join(LOGS_DIR, "traces")
 
+# Adresář klee výsledků
+KLEE_OUTPUT = os.path.join(LOGS_DIR, "klee-output")
+
 # Adresář s analýzymi
 ANALYSIS_DIR = os.path.join(LOGS_DIR, "analysis")
-
-# Cesta k KLEE bitcode testovacímu souboru
-KLEE_BITCODE_FILE = os.path.join(KLEE_BUILD_DIR, "klee_program.bc")
 
 # Cesta k `ktest-tool`
 KTEST_TOOL = "ktest-tool"

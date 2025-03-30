@@ -15,7 +15,7 @@ import subprocess
 import struct
 import re
 import shutil
-from core.config import KLEE_EXECUTABLE, KLEE_OPTIONS, KLEE_BITCODE_FILE, KLEE_BUILD_DIR, KTEST_TOOL
+from core.config import KLEE_EXECUTABLE, KLEE_OPTIONS, KTEST_TOOL
 
 
 def run_klee(build_dir, bitcode_file):
@@ -132,19 +132,14 @@ def extract_gdb_inputs(klee_out_dir, raw_ktest_path, param_types):
 def get_klee_test_inputs(build_dir, bitcode_file, param_types):
     """Spustí celý proces a vrátí cestu k testovacím vstupům i samotná data."""
     klee_out_dir = run_klee(build_dir, bitcode_file)
+    print("run_klee finished")
     if not klee_out_dir:
         return None, []
 
+    print("before extract klee inputs")
     raw_file = extract_klee_inputs(klee_out_dir)
     if not raw_file:
         return None, []
-
+    
+    print("before return extract gdb inputs")
     return extract_gdb_inputs(klee_out_dir, raw_file, param_types)
-
-
-if __name__ == "__main__":
-    param_types = ["int", "double", "char"]
-    klee_out_dir = run_klee(KLEE_BUILD_DIR, KLEE_BITCODE_FILE)
-    if klee_out_dir:
-        raw_file = extract_klee_inputs(klee_out_dir)
-        extract_gdb_inputs(klee_out_dir, raw_file, param_types)

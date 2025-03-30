@@ -4,7 +4,7 @@ import re
 import subprocess
 
 
-from core.config import BUILD_DIR, LOGS_DIR, TRACE_DIR, ANALYSIS_DIR
+from core.config import BUILD_DIR, LOGS_DIR, TRACE_DIR, ANALYSIS_DIR, KLEE_OUTPUT
 
 from core.engine.generator import generate_main, generate_main_klee
 from core.engine.compiler import compile_x86, compile_klee
@@ -73,8 +73,6 @@ def extract_functions_from_header(header_file):
 
 def select_function(header_file=None, src_file=None, function_name=None, use_klee=False):
     """Nechá uživatele vybrat .h soubor, funkci a odpovídající .c soubor."""
-    print(f"Klee {use_klee}")
-
     # ✅ Výběr hlavičkového souboru pomocí fzf
     if not header_file:
         print("\n📂 Vyber hlavičkový soubor (.h):")
@@ -120,6 +118,11 @@ def select_function(header_file=None, src_file=None, function_name=None, use_kle
 
     print(f"📌 Vybraná funkce: {target_function}")
 
+    # Definice param_types pro vybranou funkci
+    params = functions.get(target_function, [])
+    param_types = [param.split()[0] for param in params] 
+
+    print(f" params types: {param_types}")
     # 🛠 Výběr .c souboru
     if not src_file:
         print("\n📂 Vyber odpovídající .c soubor:")
@@ -149,7 +152,7 @@ def select_function(header_file=None, src_file=None, function_name=None, use_kle
     print(f"✅ Kompilace dokončena pro `{target_function}`.")
 
     if use_klee:
-        klee_dir = os.path.join(LOGS_DIR, target_function, "klee_output")
+        klee_dir = os.path.join(KLEE_OUTPUT, target_function)
         os.makedirs(klee_dir, exist_ok=True)
         bitcode_file = os.path.join(klee_dir, "klee_program.bc")
  
@@ -271,7 +274,7 @@ def main():
     select_parser = subparsers.add_parser("select-function", help="Vyber funkci z .h souboru a kompiluj.")
     select_parser.add_argument("-H", "--header", required=False, help="Hlavičkový soubor .h")
     select_parser.add_argument("-c", "--source", required=False, help="Zdrojový soubor .c")
-    select_parser.add_argument("-f", "--function", required=True, help="Název funkce pro výběr")
+    select_parser.add_argument("-f", "--function", required=False, help="Název funkce pro výběr")
     select_parser.add_argument("--klee", action="store_true", help="Použít KLEE analýzu")
 
     # Spuštění trace
