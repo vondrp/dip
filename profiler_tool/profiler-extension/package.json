@@ -10,23 +10,31 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:profiler-extension.selectJson"
-  ],
+    "onCommand:profiler-extension.highlightCode",
+    "onCommand:profiler-extension.selectJson",
+    "onCommand:profiler.selectFunction",
+    "onCommand:profiler.runTrace",
+    "onCommand:profiler.compareRuns"
+ ],
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "profiler-extension.helloWorld",
-        "title": "Hello World"
-      },
-      {
-        "command": "profiler-extension.selectJson",
-        "title": "Select JSON File for Profiling"
-      },
-      {
         "command": "profiler-extension.highlightCode",
-        "title": "Highlight Code from JSON"
-      }
+        "title": "Profiler: Highlight Code from JSON"
+      },
+      {
+        "command": "profiler.selectFunction",
+        "title": "Profiler: Select Function"
+    },
+    {
+        "command": "profiler.runTrace",
+        "title": "Profiler: Run Trace"
+    },
+    {
+      "command": "profiler.compareRuns",
+      "title": "Profiler: Compare Runs"
+    }
     ]
   },
   "scripts": {

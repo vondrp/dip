@@ -71,20 +71,20 @@ def extract_functions_from_header(header_file):
     return functions    
 
 
-def select_function(header_file=None, src_file=None, use_klee=False):
+def select_function(header_file=None, src_file=None, function_name=None, use_klee=False):
     """Nechá uživatele vybrat .h soubor, funkci a odpovídající .c soubor."""
     print(f"Klee {use_klee}")
+
     # ✅ Výběr hlavičkového souboru pomocí fzf
     if not header_file:
         print("\n📂 Vyber hlavičkový soubor (.h):")
         header_file = fzf_select_file(".h")
 
-    # Kontrola platnosti .h souboru, opakovat, dokud nebude platný
+    # Kontrola platnosti .h souboru
     while not header_file or not os.path.exists(header_file):
         print("❌ Chyba: Nevybral jsi platný .h soubor.")
         print("\n📂 Vyber znovu hlavičkový soubor (.h):")
         header_file = fzf_select_file(".h")    
-
 
     # 🔍 Extrakce funkcí z hlavičkového souboru
     functions = extract_functions_from_header(header_file)
@@ -92,26 +92,39 @@ def select_function(header_file=None, src_file=None, use_klee=False):
         print(f"❌ V souboru {header_file} nebyly nalezeny žádné funkce.")
         exit(1)
 
-    # 🛠 Výběr funkce
-    print("\n📌 Nalezené funkce v hlavičkovém souboru:")
-    for func, params in functions.items():
-        param_str = ", ".join(params) if params else "void"
-        print(f" - {func}({param_str})")
+    # 🛠 Výběr funkce (buď ručně, nebo z argumentu)
+    if function_name:
+        if function_name in functions:
+            target_function = function_name
+        else:
+            print(f"❌ Funkce `{function_name}` nebyla nalezena v `{header_file}`.")
+            print("\n📌 Nalezené funkce v hlavičkovém souboru:")
+            for func, params in functions.items():
+                param_str = ", ".join(params) if params else "void"
+                print(f" - {func}({param_str})")
 
-    target_function = input("\n📝 Zadej jméno funkce k použití: ")
-    while target_function not in functions:
-        print("❌ Neplatná funkce. Zkus to znovu.")
-        target_function = input("\n📝 Zadej jméno funkce k použití: ")    
+            target_function = input("\n📝 Zadej jméno funkce k použití: ")
+            while target_function not in functions:
+                print("❌ Neplatná funkce. Zkus to znovu.")
+                target_function = input("\n📝 Zadej jméno funkce k použití: ")
+    else:
+        print("\n📌 Nalezené funkce v hlavičkovém souboru:")
+        for func, params in functions.items():
+            param_str = ", ".join(params) if params else "void"
+            print(f" - {func}({param_str})")
 
+        target_function = input("\n📝 Zadej jméno funkce k použití: ")
+        while target_function not in functions:
+            print("❌ Neplatná funkce. Zkus to znovu.")
+            target_function = input("\n📝 Zadej jméno funkce k použití: ")    
 
-    param_types = [param.split()[0] for param in functions[target_function]]
-    print(f"Parametry typy: {param_types}")
-    # 🛠 Výběr .c souboru pomocí fzf, pokud není zadán
+    print(f"📌 Vybraná funkce: {target_function}")
+
+    # 🛠 Výběr .c souboru
     if not src_file:
         print("\n📂 Vyber odpovídající .c soubor:")
         src_file = fzf_select_file(".c")
 
-    # Kontrola platnosti .c souboru a existence vybrané funkce
     while not src_file or not os.path.exists(src_file):
         print("❌ Chyba: Nevybral jsi platný .c soubor.")
         print("\n📂 Vyber znovu odpovídající .c soubor:")
@@ -121,26 +134,22 @@ def select_function(header_file=None, src_file=None, use_klee=False):
     with open(src_file, "r") as f:
         file_content = f.read()
         if target_function not in file_content:
-            print(f"❌ Soubor {src_file} neobsahuje funkci {target_function}. Zkus to znovu.")
-            src_file = None
-            while not src_file or not os.path.exists(src_file) or target_function not in open(src_file).read():
-                print("\n📂 Vyber odpovídající .c soubor s požadovanou funkcí:")
-                src_file = fzf_select_file(".c")
+            print(f"❌ Soubor {src_file} neobsahuje funkci {target_function}.")
+            exit(1)
 
-    # Vygenerování `generated_main.c`
+    # Generování `generated_main.c`
     generate_main(target_function, functions[target_function], header_file)
-
     print(f"\n✅ Generování `generated_main.c` dokončeno pro funkci `{target_function}` ze souboru `{header_file}`.")
 
-    # 🔧 Kompilace souboru `generated_main.c`
+    # 🔧 Kompilace
     print("\n🔨 Kompilace `generated_main.c`...")
     src_dir = os.path.dirname(src_file)
     binary_file = os.path.join(BUILD_DIR, f"binary_{target_function}.out")
-    compile_x86(binary_file=binary_file, src_file=src_file, src_dir = src_dir)
-    print(f"✅ Kompilace dokončena pro `generated_main.c`.")
+    compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
+    print(f"✅ Kompilace dokončena pro `{target_function}`.")
 
     if use_klee:
-        klee_dir = os.path.join(BASE_DIR, "logs", target_function, "klee_output")
+        klee_dir = os.path.join(LOGS_DIR, target_function, "klee_output")
         os.makedirs(klee_dir, exist_ok=True)
         bitcode_file = os.path.join(klee_dir, "klee_program.bc")
  
@@ -164,6 +173,8 @@ def extract_function_name(binary_file):
 
 def run_trace(binary_file=None, param_file=None):
     """Umožní uživateli vybrat binárku a spustit trace pro více sad parametrů (ze souboru nebo ručně)."""
+    
+    print(f"binary file: {binary_file}")
     if not binary_file:
         print("\n📂 Vyber binární soubor:")
         binary_file = fzf_select_file(".out", BUILD_DIR)
@@ -260,13 +271,10 @@ def main():
     select_parser = subparsers.add_parser("select-function", help="Vyber funkci z .h souboru a kompiluj.")
     select_parser.add_argument("-H", "--header", required=False, help="Hlavičkový soubor .h")
     select_parser.add_argument("-c", "--source", required=False, help="Zdrojový soubor .c")
+    select_parser.add_argument("-f", "--function", required=True, help="Název funkce pro výběr")
     select_parser.add_argument("--klee", action="store_true", help="Použít KLEE analýzu")
 
     # Spuštění trace
-    trace_parser = subparsers.add_parser("run-trace", help="Spusť binárku, vytvoř trace.log a proveď analýzu")
-    trace_parser.add_argument("-b", "--binary", help="Cesta k binárnímu souboru")
-    trace_parser.add_argument("-p", "--params", nargs="*", help="Parametry pro spuštění binárky")
-
     trace_parser = subparsers.add_parser("run-trace", help="Spusť binárku, vytvoř trace.log a proveď analýzu")
     trace_parser.add_argument("-b", "--binary", help="Cesta k binárnímu souboru")
     trace_parser.add_argument("-f", "--file", help="Soubor obsahující sady parametrů (každý řádek = jedna sada)")
@@ -280,7 +288,7 @@ def main():
     args = parser.parse_args()
 
     if args.command == "select-function":
-        select_function(header_file=args.header, src_file=args.source, use_klee=args.klee)
+        select_function(header_file=args.header, src_file=args.source, function_name=args.function, use_klee=args.klee)
     elif args.command == "run-trace":
         run_trace(args.binary, args.file)
     elif args.command == "compare-runs":
