@@ -14,10 +14,30 @@
     "onCommand:profiler-extension.selectJson",
     "onCommand:profiler.selectFunction",
     "onCommand:profiler.runTrace",
-    "onCommand:profiler.compareRuns"
+    "onCommand:profiler.compareRuns",
+    "onView:profilerSidebar"
  ],
   "main": "./out/extension.js",
   "contributes": {
+    "viewsContainers": {
+        "activitybar": [
+            {
+                "id": "profilerSidebar",
+                "title": "Profiler",
+                "icon": "media/icon.png"
+            }
+        ]
+    },
+    "views": {
+        "profilerSidebar": [
+            {
+                "id": "profilerSidebar",
+                "name": "Profiling Actions",
+                "type": "webview",
+                "icon": "media/icon.png"
+            }
+        ]
+    },
     "commands": [
       {
         "command": "profiler-extension.highlightCode",
