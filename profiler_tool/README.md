@@ -1,113 +1,306 @@
 # dip
 
-# Návod pro instalaci Klee - vycházející z: https://klee-se.org/build/build-llvm13/ 
-V tomto návodu je popsána instalace nástroje Klee pro konkolické testování, který je součástí tohoto projektu. Tento postup je zaměřen výhradně na testování C kódu a knihoven, přičemž využívá STP solver, knihovnu uClibc (pro testování C knihoven) a Googletest pro unit testy.
+# Návod pro instalaci Klee
 
-Tento postup byl úspěšně proveden na WSL s Ubuntu 22.04.
+Tento návod popisuje postup instalace nástroje **Klee** pro konkolické testování C kódu a knihoven. Klee využívá **STP solver**, knihovnu **uClibc** pro testování C knihoven a **GoogleTest** pro unit testy. Návod byl úspěšně proveden na systému WSL s distribucí Ubuntu 22.04.
 
-1. Závislosti: 
-Nejprve je nutné nainstalovat potřebné balíčky:
+## Krok 1: Instalace závislostí
 
-sudo apt update && sudo apt install -y build-essential git cmake llvm-13 clang-13 llvm-13-dev llvm-13-tools libboost-all-dev libgoogle-perftools-dev zlib1g-dev
+Nejprve je nutné nainstalovat potřebné balíčky a nástroje pro kompilaci a běh Klee.
 
-2. Instalace constraint solveru (vybrán STP)
-sudo apt-get install cmake bison flex libboost-all-dev python3 perl zlib1g-dev minisat
+1. **Aktualizujte repozitáře a nainstalujte základní balíčky:**
 
-git clone https://github.com/stp/stp.git
-cd stp
-git checkout tags/2.3.3
-mkdir build
-cd build
-cmake ..
-make
-sudo make install
+    ```bash
+    sudo apt update && sudo apt install -y build-essential git cmake llvm-13 clang-13 llvm-13-dev llvm-13-tools \
+      libboost-all-dev libgoogle-perftools-dev zlib1g-dev
+    ```
 
-Dále nastavíme neomezený limit pro zásobník:
+2. **Instalace STP (Constraint Solver)**
 
-ulimit -s unlimited
+    STP je vybrán jako solver pro Klee. Pro jeho instalaci postupujte následovně:
 
-3. (Volitelné) Kompilace uClibc a modelu POSIX prostředí (nepodporováno na macOS)
-Pokud potřebujete spustit reálné programy, budete potřebovat POSIX runtime a uClibc:
+    ```bash
+    sudo apt-get install cmake bison flex libboost-all-dev python3 perl zlib1g-dev minisat
+    ```
 
-git clone https://github.com/klee/klee-uclibc.git
-$ cd klee-uclibc
-./configure --make-llvm-lib --with-cc=clang-13 --with-llvm-config=llvm-config-13
+    Poté stáhněte a nainstalujte STP:
 
-$ make -j2
-$ cd ..
+    ```bash
+    git clone https://github.com/stp/stp.git
+    cd stp
+    git checkout tags/2.3.3
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
+    ```
 
-4. Instalace Googletest (pro unit testy)
-Pro podporu unit testů je nutné stáhnout a nainstalovat Googletest:
+3. **Nastavení neomezeného limitu pro zásobník:**
 
-curl -OL https://github.com/google/googletest/archive/release-1.11.0.zip
-unzip release-1.11.0.zip
+    Aby bylo možné provádět hluboké rekurze, je třeba nastavit neomezený limit pro zásobník:
 
-5. Dodatečné nástroje
-Nainstalujte potřebné knihovny a nástroje:
+    ```bash
+    ulimit -s unlimited
+    ```
 
-sudo apt-get install libsqlite3-dev
-pip install lit
-export PATH=$PATH:/home/vondrp/.local/bin   # Nezapomeňte na správnou cestu k lit
+## Krok 2: (Volitelné) Kompilace uClibc a POSIX modelu
 
-6. Instalace Klee
-Stáhněte a postavte Klee z repozitáře:
+Pokud potřebujete spustit reálné programy a používat POSIX runtime, budete potřebovat **uClibc**. Tento krok není podporován na macOS.
 
-git clone https://github.com/klee/klee.git
-cd klee
-mkdir build
-cd build
+1. Stáhněte a zkompilujte **uClibc**:
 
-cmake -DENABLE_SOLVER_STP=ON -DENABLE_POSIX_RUNTIME=ON -DKLEE_UCLIBC_PATH=../../klee-uclibc -DENABLE_UNIT_TESTS=ON -DGTEST_SRC_DIR=../../googletest-release-1.11.0 ..
-make
+    ```bash
+    git clone https://github.com/klee/klee-uclibc.git
+    cd klee-uclibc
+    ./configure --make-llvm-lib --with-cc=clang-13 --with-llvm-config=llvm-config-13
+    make -j2
+    cd ..
+    ```
+
+## Krok 3: Instalace GoogleTest
+
+Pro podporu **unit testů** je nutné nainstalovat **GoogleTest**. Stáhněte a nainstalujte:
+
+1. Stáhněte si verzi 1.11.0 GoogleTest:
+
+    ```bash
+    curl -OL https://github.com/google/googletest/archive/release-1.11.0.zip
+    unzip release-1.11.0.zip
+    ```
+
+## Krok 4: Instalace dodatečných nástrojů
+
+1. **Nainstalujte potřebné knihovny:**
+
+    ```bash
+    sudo apt-get install libsqlite3-dev
+    ```
+
+2. **Nainstalujte Python nástroj `lit` pro spuštění testů:**
+
+    ```bash
+    pip install lit
+    ```
+
+3. **Přidejte `lit` do PATH, pokud jej používáte:**
+
+    ```bash
+    export PATH=$PATH:/home/vondrp/.local/bin   # Nezapomeňte upravit cestu k lit
+    ```
+
+## Krok 5: Instalace Klee
+
+Nyní stáhněte a zkompilujte **Klee**:
+
+1. **Stáhněte Klee z repozitáře:**
+
+    ```bash
+    git clone https://github.com/klee/klee.git
+    cd klee
+    mkdir build
+    cd build
+    ```
+
+2. **Spusťte kompilaci Klee s požadovanými možnostmi:**
+
+    ```bash
+    cmake -DENABLE_SOLVER_STP=ON -DENABLE_POSIX_RUNTIME=ON -DKLEE_UCLIBC_PATH=../../klee-uclibc -DENABLE_UNIT_TESTS=ON -DGTEST_SRC_DIR=../../googletest-release-1.11.0 ..
+    make
+    ```
 
 Tento příkaz předpokládá následující strukturu adresářů:
-root
-|-- klee -> build
-|-- klee-uclibc
-|-- googletest-release-1.11.0
+```
+    |-- klee -> build
+    |-- klee-uclibc
+    |-- googletest-release-1.11.0
+```
 
-7. Přidání Klee do cesty
-Pro správnou funkci Klee je potřeba přidat jeho cesty do prostředí. Otevřete soubor ~/.bashrc:
-nano ~/.bashrc
+Pokud je vše nastaveno správně, Klee by měl být zkompilován bez chyb.
 
-Na konec souboru přidejte cesty k binárním souborům a include složkám:
+## Krok 6: Přidání Klee do cesty (PATH)
 
-export PATH=$PATH:/home/vondrp/klee/build/bin
-export C_INCLUDE_PATH=/home/vondrp/klee/klee/include:$C_INCLUDE_PATH
+Pro pohodlné používání Klee je nutné přidat jeho binární soubory a include složky do proměnné PATH.
 
-Pokud se cesty neaktualizují správně, je možné upravit konstanty v souboru config.py
+1. **Otevřete soubor `~/.bashrc`:**
 
-## Instalace dalších věcí:
-gdb: gdb --version
-sudo apt install gdb
+    ```bash
+    nano ~/.bashrc
+    ```
 
-sudo apt install fzf
+2. **Na konec souboru přidejte následující řádky:**
+
+    ```bash
+    export PATH=$PATH:/home/vondrp/klee/build/bin
+    export C_INCLUDE_PATH=/home/vondrp/klee/klee/include:$C_INCLUDE_PATH
+    ```
+
+3. **Uložte soubor a zavřete editor (Ctrl+X, pak Y pro uložení a Enter).**
+
+4. **Aktivujte změny:**
+
+    ```bash
+    source ~/.bashrc
+    ```
+
+Po těchto krocích by měly být příkazy Klee dostupné z příkazového řádku. A funkční v rámci nástroje.
+
+# Instalace QEMU (9.2.3)
+
+Tento návod popisuje postup instalace QEMU verze 9.2.3 na systém Ubuntu 22.04 (WSL)
+
+## Krok 1: Stažení a rozbalení QEMU
+
+1. Stáhněte si zdrojové kódy QEMU:
+    ```bash
+    wget https://download.qemu.org/qemu-9.2.3.tar.xz
+    ```
+2. Rozbalte archiv:
+    ```bash
+    tar xvJf qemu-9.2.3.tar.xz
+    ```
+3. Přejděte do adresáře s rozbaleným QEMU:
+    ```bash
+    cd qemu-9.2.3
+    ```
+
+## Krok 2: Instalace závislostí
+
+1. Aktualizujte seznam balíčků a nainstalujte potřebné závislosti:
+    ```bash
+    sudo apt update
+    sudo apt install -y build-essential ninja-build python3-pip \
+      libglib2.0-dev libfdt-dev libpixman-1.0-dev zlib1g-dev \
+      libcap-ng-dev libgmp-dev libssl-dev libgtk-3-dev \
+      meson pkg-config
+    ```
+
+2. Nainstalujte Python závislosti:
+    ```bash
+    python3 -m pip install --user tomli
+    pip3 install --user sphinx sphinx_rtd_theme
+    ```
+
+3. Doplňte balíčky pro sestavení QEMU:
+    ```bash
+    sudo apt-get install -y libglib2.0-dev libpixman-1-dev libfdt-dev libaio-dev zlib1g-dev libssl-dev
+    ```
+
+4. Pokud používáte WSL (Windows Subsystem for Linux), nainstalujte hlavičky pro aktuální jádro:
+    ```bash
+    sudo apt-get install linux-headers-$(uname -r)
+    ```
+
+## Krok 3: Konfigurace a kompilace
+
+1. Spusťte konfiguraci s požadovanými možnostmi:
+    ```bash
+    ./configure --prefix=/usr/local --target-list=arm-softmmu,arm-linux-user
+    ```
+
+2. Po úspěšné konfiguraci spusťte kompilaci:
+    ```bash
+    make -j$(nproc)
+    ```
+
+## Krok 4: Ověření instalace
+
+1. Ověřte verzi QEMU pro ARM emulátory:
+
+    ```bash
+    /home/vondrp/programs/qemu/qemu-9.2.3/build/qemu-arm --version
+    ```
+
+2. Ověřte verzi QEMU pro ARM systém:
+
+    ```bash
+    /home/vondrp/programs/qemu/qemu-9.2.3/build/qemu-system-arm --version
+    ```
+
+Pokud tyto příkazy vrátí verzi QEMU (např. `qemu-arm version 9.2.3`), znamená to, že instalace byla úspěšná.
+
+## Krok 5: Přidání QEMU do cesty (PATH)
+
+Pokud chcete spustit QEMU příkazy bez zadávání celé cesty, přidejte adresář s QEMU do proměnné PATH.
+
+1. Otevřete soubor `~/.bashrc`:
+    ```bash
+    nano ~/.bashrc
+    ```
+
+2. Na konec souboru přidejte následující řádek:
+    ```bash
+    export PATH=$PATH:/home/vondrp/programs/qemu/qemu-9.2.3/build
+    ```
+
+3. Uložte změny a zavřete editor (stiskněte `Ctrl+X`, pak `Y` pro uložení a `Enter`).
+
+4. Aktivujte změny:
+    ```bash
+    source ~/.bashrc
+    ```
+
+Po přidání do cesty by měly být příkazy jako `qemu --version` nebo `qemu-system-arm --version` dostupné přímo z terminálu.
+
+---
+
+Tento návod vám pomůže snadno nainstalovat QEMU na vaši distribuci Ubuntu a zajistit jeho správné nastavení pro emulaci ARM systémů.
 
 
-# Instalace rozšíření visual studio code
-Instalace Node.js a npm 
-sudo apt install nodejs npm
+---
 
-ověření: 
-node -v
-npm -v
+# Instalace dalších nástrojů
 
-(může být staršý verze - např. ubuntu 22.04 nainstalovalo verzi node v12 (nedostačující))
-- takhel se uíská nová
-curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
-source ~/.bashrc
-nvm install --lts
-nvm use --lts
+1. **Instalace GDB**
 
-Nejprve si nainstaluj Yeoman a generator pro VS Code rozšíření:
-npm install -g yo generator-code
+    GDB je debugger pro ladění programů:
 
-(Tento balíček ti pomůže vygenerovat základní strukturu rozšíření.)
+    ```bash
+    sudo apt install gdb
+    gdb --version
+    ```
 
+2. **Instalace FZF (Fuzzy Finder)**
 
-npm install --save-dev sinon @types/sinon
+    FZF je nástroj pro fuzzy hledání souborů a dalších dat:
 
+    ```bash
+    sudo apt install fzf
+    ```
 
-sudo apt-get install libnss3
+---
 
-sudo apt-get install libasound2
+# Instalace rozšíření pro Visual Studio Code
+
+1. **Instalace Node.js a npm**
+
+    ```bash
+    sudo apt install nodejs npm
+    ```
+
+    Ověření:
+
+    ```bash
+    node -v
+    npm -v
+    ```
+
+    Pokud máte starší verzi Node.js, použijte nvm pro instalaci nové verze:
+
+    ```bash
+    curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.4/install.sh | bash
+    source ~/.bashrc
+    nvm install --lts
+    nvm use --lts
+    ```
+
+2. **Instalace Yeoman a generatoru pro VS Code rozšíření**
+
+    ```bash
+    npm install -g yo generator-code
+    npm install --save-dev sinon @types/sinon
+    sudo apt-get install libnss3
+    sudo apt-get install libasound2
+    ```
+
+Tímto způsobem máte připravené všechny potřebné nástroje pro vývoj a testování.
