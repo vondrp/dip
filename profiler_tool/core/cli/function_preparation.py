@@ -3,7 +3,7 @@ import re
 
 from core.cli.file_selection import fzf_select_file
 from core.engine.generator import generate_main, generate_main_klee
-from core.engine.compiler import compile_x86, compile_klee
+from core.engine.compiler import compile_x86, compile_klee, compile_arm_linux
 from core.engine.klee_runner import get_klee_test_inputs
 from core.engine.trace_analysis import analyze_trace
 from core.config import BUILD_DIR, KLEE_OUTPUT
@@ -111,7 +111,7 @@ def check_function_in_file(src_file, target_function):
                 exit(1)
     return True
 
-def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False):
+def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, isArm=False):
     """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru."""
     header_file = select_header_file(header_file)
     functions = extract_function_from_header(header_file)
@@ -134,11 +134,14 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     # Kompilace
     print("\n[INFO] Kompilace `generated_main.c`...")
     src_dir = os.path.dirname(src_file)
-    binary_file = os.path.join(BUILD_DIR, f"binary_{target_function}.out")
-    compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
+    if isArm:
+        binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
+        compile_arm_linux(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
+    else:
+        binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
+        compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
+
     print(f"[INFO] Kompilace dokončena pro `{target_function}`.")
-
-
 
     delete_file(get_generated_main_path())
     if use_klee:

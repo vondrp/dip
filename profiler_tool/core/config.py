@@ -63,5 +63,6 @@ def set_generated_main_klee_path(new_path):
     _generated_main_klee_path = new_path
 
 GDB_SCRIPT = os.path.join(os.path.dirname(__file__), "gdb", "gdb_trace.py")
+GDB_SCRIPT_ARM = os.path.join(os.path.dirname(__file__), "gdb", "gdb_trace_arm.py")
 GDB_SCRIPT_ARM_BM = os.path.join(os.path.dirname(__file__), "gdb", "gdb_trace_bare_arm.py")
 

@@ -84,9 +84,22 @@ def compile_x86(binary_file, src_file, src_dir):
     needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
-    compile_cmd = ["gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
+    compile_cmd = ["arm-linux-gnueabihf-gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
     print(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
+
+def compile_arm_linux(binary_file, src_file, src_dir):
+    """Přeloží pouze potřebné `.c` soubory pro `generated_main.c`."""
+    needed_headers = find_dependencies(src_file)
+    header_to_source = map_headers_to_sources(src_dir)
+
+    # Najdeme odpovídající `.c` soubory
+    needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
+    needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
+
+    compile_cmd = ["arm-linux-gnueabihf-gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
+    print(f"Kompiluji: {' '.join(compile_cmd)}")
+    subprocess.run(compile_cmd, check=True)    
 
 def compile_arm_bm(binary_file, src_file, generated_main_file):
     """ Přeloží program pro ARM bare-metal """

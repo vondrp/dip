@@ -270,6 +270,15 @@ Tento návod vám pomůže snadno nainstalovat QEMU na vaši distribuci Ubuntu a
 
 ---
 
+3. **Instalace GCC pro ARM linux**
+
+sudo apt install gcc-arm-linux-gnueabihf
+
+4 **Instalace GDB multiarch**
+
+sudo apt install gdb-multiarch
+
+
 # Instalace rozšíření pro Visual Studio Code
 
 1. **Instalace Node.js a npm**

@@ -1,7 +1,8 @@
 import shutil
 import subprocess
+import time
 
-from core.config import GDB_SCRIPT
+from core.config import GDB_SCRIPT, GDB_SCRIPT_ARM
 
 
 def run_gdb_trace(binary_file, trace_file, args):
@@ -87,5 +88,80 @@ def run_gdb_trace_arm_bm(binary_file, trace_file, args):
     subprocess.run(gdb_cmd, check=True)
 
     # 🔹 4️⃣ Ukončíme QEMU po dokončení trace
+    qemu_proc.terminate()
+    print("[INFO] ✅ Trace dokončen, QEMU ukončen.")
+
+
+def run_gdb_trace_arm_linux(binary_file, trace_file, args):
+    """ Spustí ARM Linux binárku v QEMU, připojí GDB a provede tracing. """
+
+    # 🔹 Ověření dostupnosti QEMU pro Linuxový ARM
+    qemu_executable = shutil.which("qemu-arm")# or shutil.which("qemu-system-arm")
+    if not qemu_executable:
+        raise FileNotFoundError("[ERROR] ❌ `qemu-arm` nebo `qemu-system-arm` nebyl nalezen. Zkontrolujte instalaci.")
+
+    # 🔹 Ověření dostupnosti GDB multiarch
+    gdb_executable = shutil.which("gdb-multiarch")
+    if not gdb_executable:
+        raise FileNotFoundError("[ERROR] ❌ `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
+
+    # 🔹 1️⃣ Spustíme QEMU v GDB server módu
+    qemu_cmd = [
+        qemu_executable, "-L", "/usr/arm-linux-gnueabihf","-g", "1234",  # Spustí QEMU s GDB serverem na portu 1234
+        binary_file, *args
+    ]
+
+    print(f"[INFO] 🚀 Spouštím QEMU: {' '.join(qemu_cmd)}")
+    qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    # Počkáme, než se QEMU inicializuje
+    time.sleep(2)
+
+    # 🔹 2️⃣ Spustíme GDB a připojíme se k QEMU
+    gdb_cmd = [
+        gdb_executable, "-q",
+        "-ex", f"source {GDB_SCRIPT_ARM}",
+        "-ex", "set pagination off",
+        "-ex", "set confirm off",
+        "-ex", "set architecture arm",
+        "-ex", "set sysroot /usr/arm-linux-gnueabihf",
+        "-ex", "set logging file gdb_log.txt",
+        "-ex", "set logging overwrite on",
+        "-ex", "set logging on",
+        "-ex", f"file {binary_file}",
+        "-ex", "info functions",
+        "-ex", "target remote localhost:1234",
+        "-ex", "info registers",
+        "-ex", "starti",
+        "-ex", f"trace-asm {trace_file}",
+        "-ex", "set logging off",
+        "-ex", "quit"
+    ]
+
+    """
+    gdb_cmd = [
+        gdb_executable, "-q",
+        "-ex", f"source {GDB_SCRIPT_ARM}",
+        "-ex", "set pagination off",
+        "-ex", "set confirm off",
+        "-ex", "set architecture arm",
+        "-ex", "set sysroot /usr/arm-linux-gnueabihf",
+        "-ex", f"file {binary_file}",
+        "-ex", "info functions",
+        "-ex", "target remote localhost:1234",
+        "-ex", "info registers",
+        "-ex", "set logging file gdb_log.txt",
+        "-ex", "set logging overwrite on",
+        "-ex", "set logging on",
+        "-ex", "starti",
+        "-ex", f"trace-asm {trace_file}",
+        "-ex", "set logging off",
+        "-ex", "quit"
+    ]
+    """
+    print(f"[INFO] 🛠 Spouštím GDB: {' '.join(gdb_cmd)}")
+    subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+
+    # 3️⃣ Ukončíme QEMU po dokončení trace
     qemu_proc.terminate()
     print("[INFO] ✅ Trace dokončen, QEMU ukončen.")
