@@ -1,4 +1,3 @@
-# main.py
 import argparse
 from core.cli.function_preparation import prepare_function
 from core.cli.trace_analysis import trace_analysis

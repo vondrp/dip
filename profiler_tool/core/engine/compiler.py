@@ -29,7 +29,6 @@ def map_headers_to_sources(src_dir):
     return header_to_source
 
 
-
 def compile_klee(klee_dir, src_file, src_dir):
     """Přeloží program pro použití s KLEE a uloží výstup do `klee_dir`."""
     

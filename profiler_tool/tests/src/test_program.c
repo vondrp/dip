@@ -20,13 +20,13 @@ void logic_branch(int x) {
     }
 } 
 
-void compute(int a, int b) {  // Celkem: 6 instrukcí
-    if (a == 42) {  // Celkem: 2 instrukcí
+void compute(int a, int b) {
+    if (a == 42) { 
         printf("Tajná větev odhalena! a=%d\n", a);
     }
-    if (b == 0) {  // Celkem: 2 instrukcí
-        printf("Chyba: dělení nulou!\n");  // Celkem: 150 instrukcí
-        int x = 1 / b;  // Celkem: 4 instrukcí | ⚠ CRASH DETECTED! ⚠
+    if (b == 0) {
+        printf("Chyba: dělení nulou!\n");
+        int x = 1 / b;
     }
     printf("Konec compute funkce");
 }
