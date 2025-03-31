@@ -12,8 +12,8 @@
   "activationEvents": [
     "onCommand:profiler-extension.highlightCode",
     "onCommand:profiler-extension.selectJson",
-    "onCommand:profiler.selectFunction",
-    "onCommand:profiler.runTrace",
+    "onCommand:profiler.prepareFunction",
+    "onCommand:profiler.traceAnalysis",
     "onCommand:profiler.compareRuns",
     "onView:profilerSidebar"
  ],
@@ -44,12 +44,12 @@
         "title": "Profiler: Highlight Code from JSON"
       },
       {
-        "command": "profiler.selectFunction",
-        "title": "Profiler: Select Function"
+        "command": "profiler.prepareFunction",
+        "title": "Profiler: Prepare Function"
     },
     {
-        "command": "profiler.runTrace",
-        "title": "Profiler: Run Trace"
+        "command": "profiler.traceAnalysis",
+        "title": "Profiler: Trace Analysis"
     },
     {
       "command": "profiler.compareRuns",

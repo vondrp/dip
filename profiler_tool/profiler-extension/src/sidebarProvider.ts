@@ -21,11 +21,11 @@ export class ProfilerSidebarProvider implements vscode.WebviewViewProvider {
                 case 'profiler-extension.highlightCode':
                     vscode.commands.executeCommand('profiler-extension.highlightCode');
                     return;
-                case 'profiler.selectFunction':
-                    vscode.commands.executeCommand('profiler.selectFunction');
+                case 'profiler.prepareFunction':
+                    vscode.commands.executeCommand('profiler.prepareFunction');
                     return;
-                case 'profiler.runTrace':
-                    vscode.commands.executeCommand('profiler.runTrace');
+                case 'profiler.traceAnalysis':
+                    vscode.commands.executeCommand('profiler.traceAnalysis');
                     return;
                 case 'profiler.compareRuns':
                     vscode.commands.executeCommand('profiler.compareRuns');
@@ -78,8 +78,8 @@ export class ProfilerSidebarProvider implements vscode.WebviewViewProvider {
                     <h2>Profiler Actions</h2>
                     <div class="container">
                         <button onclick="vscode.postMessage({ command: 'profiler-extension.highlightCode' })">Highlight Code</button>
-                        <button onclick="vscode.postMessage({ command: 'profiler.selectFunction' })">Select Function</button>
-                        <button onclick="vscode.postMessage({ command: 'profiler.runTrace' })">Run Trace</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler.prepareFunction' })">Prepare Function</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler.traceAnalysis' })">Trace Analysis</button>
                         <button onclick="vscode.postMessage({ command: 'profiler.compareRuns' })">Compare Runs</button>
                     </div>
                     <script>

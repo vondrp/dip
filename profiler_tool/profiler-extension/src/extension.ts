@@ -36,7 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
             });
         }),
         
-        vscode.commands.registerCommand('profiler.selectFunction', async () => {
+        vscode.commands.registerCommand('profiler.prepareFunction', async () => {
             const headerFile = await selectFile('Vyber hlavičkový soubor (.h)', ['h']);
             const sourceFile = await selectFile('Vyber zdrojový soubor (.c)', ['c']);
             if (!headerFile || !sourceFile) return;
@@ -46,13 +46,13 @@ export function activate(context: vscode.ExtensionContext) {
             
             const useKlee = await vscode.window.showQuickPick(['Ano', 'Ne'], { placeHolder: 'Použít KLEE analýzu?' });
             const kleeFlag = useKlee === 'Ano' ? '--klee' : '';
-            runPythonScript('core.cli', `select-function -H "${headerFile}" -c "${sourceFile}" -f "${functionName}" ${kleeFlag}`);
+            runPythonScript('core.cli', `prepare-function -H "${headerFile}" -c "${sourceFile}" -f "${functionName}" ${kleeFlag}`);
         }),
 
-        vscode.commands.registerCommand('profiler.runTrace', async () => {
+        vscode.commands.registerCommand('profiler.traceAnalysis', async () => {
             const binaryFile = await selectFile('Vyber binární soubor', ['out']);
             if (!binaryFile) return;
-            runPythonScript('core.cli', `run-trace -b "${binaryFile}"`);
+            runPythonScript('core.cli', `trace-analysis -b "${binaryFile}"`);
         }),
 
         vscode.commands.registerCommand('profiler.compareRuns', async () => {
