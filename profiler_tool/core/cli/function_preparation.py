@@ -139,8 +139,13 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     print(f"[INFO] Kompilace dokončena pro `{target_function}`.")
 
 
+
     delete_file(get_generated_main_path())
     if use_klee:
+        # Definice param_types pro vybranou funkci
+        params = functions.get(target_function, [])
+        param_types = [param.split()[0] for param in params] 
+
         klee_dir = os.path.join(KLEE_OUTPUT, target_function)
         os.makedirs(klee_dir, exist_ok=True)
         bitcode_file = os.path.join(klee_dir, "klee_program.bc")

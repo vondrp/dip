@@ -43,31 +43,33 @@ export class ProfilerSidebarProvider implements vscode.WebviewViewProvider {
                             font-family: Arial, sans-serif;
                             margin: 0;
                             padding: 10px;
-                            background-color: #f4f4f4;
+                            background-color: var(--vscode-editor-background);
+                            color: var(--vscode-editor-foreground);
                         }
-
+    
                         h2 {
-                            color: #333;
+                            color: var(--vscode-editor-foreground);
                         }
-
+    
                         button {
-                            background-color: #4CAF50;
-                            color: white;
+                            background-color: var(--vscode-button-background);
+                            color: var(--vscode-button-foreground);
                             padding: 10px 20px;
                             margin: 5px;
                             border: none;
                             border-radius: 5px;
                             cursor: pointer;
+                            transition: background-color 0.2s;
                         }
-
+    
                         button:hover {
-                            background-color: #45a049;
+                            background-color: var(--vscode-button-hoverBackground);
                         }
-
+    
                         button:focus {
-                            outline: none;
+                            outline: 2px solid var(--vscode-focusBorder);
                         }
-
+    
                         .container {
                             display: flex;
                             flex-direction: column;
@@ -77,9 +79,9 @@ export class ProfilerSidebarProvider implements vscode.WebviewViewProvider {
                 <body>
                     <h2>Profiler Actions</h2>
                     <div class="container">
-                        <button onclick="vscode.postMessage({ command: 'profiler-extension.highlightCode' })">Highlight Code</button>
                         <button onclick="vscode.postMessage({ command: 'profiler.prepareFunction' })">Prepare Function</button>
                         <button onclick="vscode.postMessage({ command: 'profiler.traceAnalysis' })">Trace Analysis</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler-extension.highlightCode' })">Highlight Code</button>
                         <button onclick="vscode.postMessage({ command: 'profiler.compareRuns' })">Compare Runs</button>
                     </div>
                     <script>
