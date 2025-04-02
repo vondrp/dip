@@ -138,6 +138,7 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
         binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
         compile_arm_linux(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
     else:
+        print("Kompilace s x86")
         binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
         compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
 
