@@ -1,0 +1,27 @@
+{
+    "thresholds": [
+        {
+            "limit": 100,
+            "color": "rgba(144, 238, 144, 0.3)",
+            "textDecoration": ""
+        },
+        {
+            "limit": 200,
+            "color": "rgba(255, 255, 102, 0.3)",
+            "textDecoration": "underline"
+        },
+        {
+            "limit": 500,
+            "color": "rgba(255, 140, 0, 0.3)",
+            "textDecoration": "underline black"
+        },
+        {
+            "limit": 1000,
+            "color": "rgba(255, 0, 0, 0.3)",
+            "textDecoration": "underline black"
+        }
+    ],
+    "defaultLowInstructionColor": "rgba(144, 238, 144, 0.3)",
+    "crashColor": "rgba(255, 0, 0, 0.3)",
+    "crashTextDecoration": "underline black"
+}
