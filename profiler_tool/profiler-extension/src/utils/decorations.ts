@@ -82,9 +82,6 @@ export function getDecorationType(instructionCount: number, isCrash: boolean): v
 }
 
 export function highlightLines(document: vscode.TextDocument, instructions: { [key: string]: number }, crashLine?: string) {
-
-    console.warn(`CRASH LINE? ${crashLine}`);
-
     const editor = vscode.window.visibleTextEditors.find(e => e.document === document);
     if (!editor) return;
 
