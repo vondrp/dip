@@ -143,10 +143,10 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
         compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
 
     print(f"[INFO] Kompilace dokončena pro `{target_function}`.")
-
     delete_file(get_generated_main_path())
     if use_klee:
-        # Definice param_types pro vybranou funkci
+        prepare_klee(header_file, src_file, func_name)
+        """
         params = functions.get(target_function, [])
         param_types = [param.split()[0] for param in params] 
 
@@ -165,3 +165,44 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
         delete_file(get_generated_main_klee_path())
         print(f"[INFO] Testovací vstupy uloženy: {file_path}")
         print(f"[INFO] Testovací data: {test_data}")
+        """
+    print(f"[INFO] Vytovřený binární soubor: {binary_file}")
+    return binary_file
+    
+
+def prepare_klee(header_file=None, src_file=None, function_name=None):
+    """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru pro KLEE."""
+    header_file = select_header_file(header_file)
+    functions = extract_function_from_header(header_file)
+    target_function = select_target_function(functions, function_name)
+    
+    # Extrahujeme adresář z hlavičkového souboru
+    directory = os.path.dirname(header_file)
+    
+    # Vybereme odpovídající .c soubor
+    src_file = select_source_file(directory, src_file)
+    
+    # Zkontrolujeme, zda .c soubor obsahuje funkci
+    while not check_function_in_file(src_file, target_function):
+        src_file = select_source_file(directory, src_file)
+
+    # Generování `generated_main_klee.c` pro KLEE
+    generate_main_klee(target_function, functions[target_function], header_file)
+    print(f"\n[INFO] Generování `generated_main_klee.c` dokončeno pro funkci `{target_function}` ze souboru `{header_file}`.")
+
+    # Kompilace pro KLEE (bitcode)
+    print("\n[INFO] Kompilace pro KLEE...")
+    klee_dir = os.path.join(KLEE_OUTPUT, target_function)
+    os.makedirs(klee_dir, exist_ok=True)
+    compile_klee(klee_dir, src_file, os.path.dirname(src_file))
+    print(f"[INFO] Kompilace pro KLEE dokončena.")
+
+    # Vygenerování testovacích vstupů pro KLEE
+    params = functions.get(target_function, [])
+    param_types = [param.split()[0] for param in params]
+    bitcode_file = os.path.join(klee_dir, "klee_program.bc")
+    file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types)
+
+    delete_file(get_generated_main_klee_path())
+    print(f"[INFO] Testovací vstupy uloženy: {file_path}")
+    print(f"[INFO] Testovací data: {test_data}")

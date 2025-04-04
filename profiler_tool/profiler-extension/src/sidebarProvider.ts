@@ -30,6 +30,12 @@ export class ProfilerSidebarProvider implements vscode.WebviewViewProvider {
                 case 'profiler.compareRuns':
                     vscode.commands.executeCommand('profiler.compareRuns');
                     return;
+                case 'profiler.kleeAnalysis':
+                    vscode.commands.executeCommand('profiler.kleeAnalysis');
+                    return;    
+                case 'profiler.functionAnalysis':
+                    vscode.commands.executeCommand('profiler.functionAnalysis');
+                    return;    
             }
         });
     }
@@ -79,10 +85,13 @@ export class ProfilerSidebarProvider implements vscode.WebviewViewProvider {
                 <body>
                     <h2>Profiler Actions</h2>
                     <div class="container">
-                        <button onclick="vscode.postMessage({ command: 'profiler.prepareFunction' })">Prepare Function</button>
-                        <button onclick="vscode.postMessage({ command: 'profiler.traceAnalysis' })">Trace Analysis</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler.functionAnalysis' })">Function Analysis</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler.prepareFunction' })">Prepare Function binary</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler.traceAnalysis' })">Analyse binary</button>
                         <button onclick="vscode.postMessage({ command: 'profiler-extension.highlightCode' })">Highlight Code</button>
+                        <button onclick="vscode.postMessage({ command: 'profiler.kleeAnalysis' })">KLEE Analysis</button>
                         <button onclick="vscode.postMessage({ command: 'profiler.compareRuns' })">Compare Runs</button>
+                        
                     </div>
                     <script>
                         const vscode = acquireVsCodeApi();

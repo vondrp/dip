@@ -49,43 +49,6 @@ def generate_main_klee(target_function, params, header_file):
 
         f.write("    return 0;\n}\n")
 
-
-def generate_main_angr(target_function, params):
-    """Vytvoří `generated_main.c`, který umožní Angr efektivně analyzovat vstupy."""
-    with open(GENERATED_MAIN_ANGR, "w") as f:
-        f.write('#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n')
-        f.write('#define MAIN_DEFINED\n')
-        f.write('#include "test_program.c"\n\n')
-
-        f.write("int main(int argc, char *argv[]) {\n")
-        f.write("    if (argc < %d) {\n" % (len(params) + 1))
-        f.write(f'        printf("Použití: %s {" ".join(["<param>" for _ in params])}\\n", argv[0]);\n')
-        f.write("        return 1;\n    }\n\n")
-
-        converted_params = []
-        for i, param in enumerate(params):
-            param_type = param.split()[0]
-            var_name = f"param_{i}"
-
-            # Použití `volatile`, aby zabránilo optimalizacím a zajistilo symbolickou exekuci
-            if "int" in param_type:
-                f.write(f"    volatile {param_type} {var_name} = atoi(argv[{i + 1}]);\n")
-            elif "float" in param_type or "double" in param_type:
-                f.write(f"    volatile {param_type} {var_name} = atof(argv[{i + 1}]);\n")
-            elif "char" in param_type and "*" in param:  # Řetězec (`char *`)
-                f.write(f"    volatile {param_type} {var_name} = argv[{i + 1}];\n")
-            elif "char" in param_type:  # Jednotlivý znak (`char`)
-                f.write(f"    volatile {param_type} {var_name} = argv[{i + 1}][0];\n")
-            else:
-                f.write(f"    volatile {param_type} {var_name};\n")  # Ostatní typy
-
-            converted_params.append(var_name)
-
-        f.write(f'\n    printf("Spouštím test funkce: {target_function}\\n");\n')
-        f.write(f"    {target_function}({', '.join(converted_params)});\n")
-
-        f.write("    return 0;\n}\n")
-
 def generate_main(target_function, params, header_file):
     """Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky."""
 
@@ -161,3 +124,40 @@ def generate_main_arm(target_function, params):
 
     print(f"[INFO] ✅ Vygenerován `generated_main_arm.c` pro ARM bare-metal.")
     return generate_main_file 
+
+
+def generate_main_angr(target_function, params):
+    """Vytvoří `generated_main.c`, který umožní Angr efektivně analyzovat vstupy."""
+    with open(GENERATED_MAIN_ANGR, "w") as f:
+        f.write('#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n')
+        f.write('#define MAIN_DEFINED\n')
+        f.write('#include "test_program.c"\n\n')
+
+        f.write("int main(int argc, char *argv[]) {\n")
+        f.write("    if (argc < %d) {\n" % (len(params) + 1))
+        f.write(f'        printf("Použití: %s {" ".join(["<param>" for _ in params])}\\n", argv[0]);\n')
+        f.write("        return 1;\n    }\n\n")
+
+        converted_params = []
+        for i, param in enumerate(params):
+            param_type = param.split()[0]
+            var_name = f"param_{i}"
+
+            # Použití `volatile`, aby zabránilo optimalizacím a zajistilo symbolickou exekuci
+            if "int" in param_type:
+                f.write(f"    volatile {param_type} {var_name} = atoi(argv[{i + 1}]);\n")
+            elif "float" in param_type or "double" in param_type:
+                f.write(f"    volatile {param_type} {var_name} = atof(argv[{i + 1}]);\n")
+            elif "char" in param_type and "*" in param:  # Řetězec (`char *`)
+                f.write(f"    volatile {param_type} {var_name} = argv[{i + 1}];\n")
+            elif "char" in param_type:  # Jednotlivý znak (`char`)
+                f.write(f"    volatile {param_type} {var_name} = argv[{i + 1}][0];\n")
+            else:
+                f.write(f"    volatile {param_type} {var_name};\n")  # Ostatní typy
+
+            converted_params.append(var_name)
+
+        f.write(f'\n    printf("Spouštím test funkce: {target_function}\\n");\n')
+        f.write(f"    {target_function}({', '.join(converted_params)});\n")
+
+        f.write("    return 0;\n}\n")

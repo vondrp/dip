@@ -53,7 +53,8 @@ def trace_analysis(binary_file=None, param_file=None, isArm = False):
     if not param_sets:
         param_sets.append([])  # Prázdná sada, pokud uživatel nic nezadá
 
-    trace_file = "" # definice proměnné
+    trace_file = ""
+    output_json = ""
     # Spuštění trace a analýzy pro každou sadu parametrů
     for params in param_sets:
         param_str = "_".join(params) if params else "no_params"
@@ -63,7 +64,6 @@ def trace_analysis(binary_file=None, param_file=None, isArm = False):
             print(f"\n[INFO] Spouštím trace pro {binary_file} s parametry {params}")
             run_gdb_trace_arm_linux(binary_file, trace_file, params)
         else:    
-            print(f" JMÉNO FUNKCE: {func_name}")
             trace_file = os.path.join(TRACE_DIR, f"trace_{func_name}_{param_str}.log")
             print(f"\n[INFO] Spouštím trace pro {binary_file} s parametry {params}")
             run_gdb_trace(binary_file, trace_file, params)
@@ -84,3 +84,4 @@ def trace_analysis(binary_file=None, param_file=None, isArm = False):
         print(f"\n[INFO] Probíhá analýza pro trace soubor: {trace_file}")
         analyze_trace(trace_file, binary_file, func_name, output_json)
         print(f"[INFO] Analýza dokončena! Výstupní soubor: {output_json}")
+    return output_json

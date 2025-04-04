@@ -1,5 +1,48 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
+import * as os from 'os';
+import * as crypto from 'crypto';
+
+function generateTempFile(): string {
+    const random = crypto.randomBytes(8).toString('hex');
+    return path.join(os.tmpdir(), `profiler-result-${random}.txt`);
+}
+
+export async function runPythonScriptReturn(module: string, args: string): Promise<string> {
+    const tempFile = generateTempFile();
+    const fullCommand = `python3 -m ${module} ${args} --result-file "${tempFile}"`;
+
+    const terminal = vscode.window.createTerminal({
+        name: 'Profiler Python Script',
+        cwd: path.join(__dirname, '..', '..', '..')
+    });
+
+    terminal.sendText(fullCommand);
+    terminal.show();
+
+    vscode.window.showInformationMessage(`Spouštím skript: ${fullCommand}`);
+
+    return await watchForFileChange(tempFile);
+}
+
+// Čeká na zápis do souboru pomocí fs.watchFile
+function watchForFileChange(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const checkAndResolve = () => {
+            fs.readFile(filePath, 'utf8', (err, data) => {
+                if (!err && data.trim().length > 0) {
+                    fs.unwatchFile(filePath);  // Odpoj watcher
+                    resolve(data.trim());
+                }
+            });
+        };
+
+        fs.watchFile(filePath, { interval: 1000 }, () => {
+            checkAndResolve();
+        });
+    });
+}
 
 export async function runPythonScript(module: string, args: string) {
     const pythonPath = 'python3';
