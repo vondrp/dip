@@ -97,7 +97,7 @@ def compile_arm_linux(binary_file, src_file, src_dir):
     needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
-    compile_cmd = ["arm-linux-gnueabihf-gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
+    compile_cmd = ["arm-linux-gnueabihf-gcc", "-g", "-static", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
     print(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)    
 

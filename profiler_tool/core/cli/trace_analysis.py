@@ -3,7 +3,7 @@ import re
 from core.cli.file_selection import fzf_select_file
 from core.engine.tracer import run_gdb_trace, run_gdb_trace_arm_linux
 from core.engine.trace_analysis import analyze_trace
-from core.config import BUILD_DIR, TRACE_DIR, ANALYSIS_DIR
+from core.config import BUILD_DIR, TRACE_DIR, ANALYSIS_DIR, DEFAULT_ARCHITECTURE
 
 def extract_function_name(binary_file):
     """Extrahuje jméno funkce z názvu binárního souboru."""
@@ -11,7 +11,7 @@ def extract_function_name(binary_file):
     match = re.search(r"binary_[^_]+_([\w\-\d_]+)\.out", os.path.basename(binary_file))
     return match.group(1) if match else "unknown"
 
-def trace_analysis(binary_file=None, param_file=None, isArm = False):
+def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHITECTURE):
     """Umožní uživateli vybrat binární soubor a spustit trace pro více sad parametrů."""
 
     if not binary_file:
@@ -59,26 +59,24 @@ def trace_analysis(binary_file=None, param_file=None, isArm = False):
     for params in param_sets:
         param_str = "_".join(params) if params else "no_params"
 
-        if isArm:
+        if architecture == "arm":
             trace_file = os.path.join(TRACE_DIR, f"traceArm_{func_name}_{param_str}.log")
             print(f"\n[INFO] Spouštím trace pro {binary_file} s parametry {params}")
             run_gdb_trace_arm_linux(binary_file, trace_file, params)
+            json_filename = f"instructionsArm_{func_name}_{param_str}.json"
         else:    
             trace_file = os.path.join(TRACE_DIR, f"trace_{func_name}_{param_str}.log")
             print(f"\n[INFO] Spouštím trace pro {binary_file} s parametry {params}")
             run_gdb_trace(binary_file, trace_file, params)
+            json_filename = f"instructions_{func_name}_{param_str}.json"
+
+
         print(f"[INFO] Trace dokončen! Výstup: {trace_file}")
 
         # Spuštění analýzy trace souboru
         output_json_dir = os.path.join(ANALYSIS_DIR, func_name)
         os.makedirs(output_json_dir, exist_ok=True)
-
-        if isArm:
-            json_filename = f"instructionsArm_{func_name}_{param_str}.json"
-        else:
-            json_filename = f"instructions_{func_name}_{param_str}.json"
-        
-        
+                
         output_json = os.path.join(output_json_dir, json_filename)
 
         print(f"\n[INFO] Probíhá analýza pro trace soubor: {trace_file}")

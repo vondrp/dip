@@ -6,7 +6,7 @@ from core.engine.generator import generate_main, generate_main_klee
 from core.engine.compiler import compile_x86, compile_klee, compile_arm_linux
 from core.engine.klee_runner import get_klee_test_inputs
 from core.engine.trace_analysis import analyze_trace
-from core.config import BUILD_DIR, KLEE_OUTPUT
+from core.config import BUILD_DIR, KLEE_OUTPUT, DEFAULT_ARCHITECTURE
 from core.config import get_generated_main_path, get_generated_main_klee_path
 
 def delete_file(file_path):
@@ -111,7 +111,7 @@ def check_function_in_file(src_file, target_function):
                 exit(1)
     return True
 
-def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, isArm=False):
+def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, architecture=DEFAULT_ARCHITECTURE):
     """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru."""
     header_file = select_header_file(header_file)
     functions = extract_function_from_header(header_file)
@@ -134,38 +134,18 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     # Kompilace
     print("\n[INFO] Kompilace `generated_main.c`...")
     src_dir = os.path.dirname(src_file)
-    if isArm:
+    if architecture == "arm":
         binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
         compile_arm_linux(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
     else:
-        print("Kompilace s x86")
         binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
         compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
 
     print(f"[INFO] Kompilace dokončena pro `{target_function}`.")
-    delete_file(get_generated_main_path())
+    #delete_file(get_generated_main_path())
     if use_klee:
         prepare_klee(header_file, src_file, func_name)
-        """
-        params = functions.get(target_function, [])
-        param_types = [param.split()[0] for param in params] 
 
-        klee_dir = os.path.join(KLEE_OUTPUT, target_function)
-        os.makedirs(klee_dir, exist_ok=True)
-        bitcode_file = os.path.join(klee_dir, "klee_program.bc")
- 
-        generate_main_klee(target_function, functions[target_function], header_file)
-        print(f"[INFO] Vygenerován `generated_main_klee.c`.")
-
-        compile_klee(klee_dir, src_file, src_dir)
-        print(f"[INFO] Kompilace pro KLEE dokončena.")
-
-        file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types)
-
-        delete_file(get_generated_main_klee_path())
-        print(f"[INFO] Testovací vstupy uloženy: {file_path}")
-        print(f"[INFO] Testovací data: {test_data}")
-        """
     print(f"[INFO] Vytovřený binární soubor: {binary_file}")
     return binary_file
     

@@ -66,3 +66,28 @@ GDB_SCRIPT = os.path.join(os.path.dirname(__file__), "gdb", "gdb_trace.py")
 GDB_SCRIPT_ARM = os.path.join(os.path.dirname(__file__), "gdb", "gdb_trace_arm.py")
 GDB_SCRIPT_ARM_BM = os.path.join(os.path.dirname(__file__), "gdb", "gdb_trace_bare_arm.py")
 
+ARCHITECTURES = ["arm", "native"]
+DEFAULT_ARCHITECTURE = "native"
+
+# Seznam volacích instrukcí pro x86 a ARM
+CALL_INSTRUCTIONS = [
+    "call", "jmp", "callq", "jmpq", "callx",  # Pro x86
+    "bl", "bx", "b", "blx"                     # Pro ARM
+]
+
+# Funkce pro získání regulárního výrazu pro volání funkcí
+def get_call_instructions_regex():
+    return "|".join([rf"\b{instr}\b" for instr in CALL_INSTRUCTIONS])
+    #return "|".join(CALL_INSTRUCTIONS)
+
+# Seznam návratových instrukcí pro x86 a ARM
+RETURN_INSTRUCTIONS = [
+    "ret",            # Pro x86
+    "bx lr",          # Pro ARM (verze ARMv7)
+    "mov pc, lr",     # Pro ARM (verze ARMv8)
+    "blx lr",         # Pro ARM (možnost při volání funkce)
+]
+
+# Funkce pro získání regulárního výrazu pro návratové instrukce
+def get_return_instructions_regex():
+    return "|".join([rf"\b{instr}\b" for instr in RETURN_INSTRUCTIONS])

@@ -3,7 +3,7 @@ import re
 import collections
 import subprocess
 import json
-
+from config import get_call_instructions_regex, get_return_instructions_regex
 
 def get_static_function_address(binary_path, function_name):
     """Získá statickou adresu funkce z binárního souboru pomocí `nm -n`."""
@@ -19,12 +19,13 @@ def get_static_function_address(binary_path, function_name):
 
 def get_runtime_function_address(trace_file, function_name):
     """Najde runtime adresu funkce v logovacím souboru."""
+    call_instruction_regex = get_call_instructions_regex()
     try:
         with open(trace_file, "r") as f:
             for line in f:
-                match = re.search(r"call\s+(0x[0-9a-fA-F]+)\s+<" + re.escape(function_name) + ">", line)
+                match = re.search(rf"({call_instruction_regex})\s+(0x[0-9a-fA-F]+)\s+<" + re.escape(function_name) + ">", line)
                 if match:
-                    runtime_addr = int(match.group(1), 16)
+                    runtime_addr = int(match.group(2), 16)
                     print(f"[INFO] Runtime adresa `{function_name}`: {hex(runtime_addr)}")
                     return runtime_addr
     except FileNotFoundError:
@@ -67,11 +68,13 @@ def count_function_instructions(file, called_function, original_function):
     recursion_depth = 1 if called_function == original_function else 0
 
     print(f"[INFO] Spuštěno `count_function_instructions`, sledujeme návrat do `{original_function}` rec depth {recursion_depth}")
+    return_instructions_regex = get_return_instructions_regex()
 
     for line in file:
         if line.startswith(f"{original_function},"):
             if recursion_depth > 0:
-                if "ret" in line:
+                if re.search(return_instructions_regex, line):
+                #if "ret" in line:
                     recursion_depth -= 1
                     if recursion_depth == 0:
                         print(f"[DEBUG] Návrat do `{original_function}`, zastavujeme počítání")
@@ -105,10 +108,13 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
     last_executed_line = None
     crash_detected = False
     
+    call_instructions_regex = get_call_instructions_regex()
+    return_instructions_regex = get_return_instructions_regex()
+
     with open(file_path, "r") as f:
         line = f.readline()
         while line:
-            if f"call   {hex(runtime_addr_target)} <{function_name}>" in line and inside_target_function != True:
+            if re.search(rf"({call_instructions_regex})\s+{hex(runtime_addr_target)} <{function_name}>", line) and inside_target_function != True:
                 inside_target_function = True
                 line = f.readline()
                 continue
@@ -123,7 +129,7 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
                         source_line_counts[last_executed_line] += 1
                     
                     # volani funkci uvnitr testovane funkce
-                    call_match = re.match(r".*call\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
+                    call_match = re.match(rf".*({call_instructions_regex})\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
                     if call_match:
                         called_function = call_match.group(2)
                         print(f"[DEBUG] Detekováno volání `{called_function}` na řádku `{last_executed_line}`")
@@ -138,7 +144,8 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
                             line = last_read_line
                             continue
                         
-                if re.search(r"\bret\b", line):
+                #if re.search(rf"\bret\b", line):
+                if re.search(return_instructions_regex, line):
                     inside_target_function = False
                     break
             
