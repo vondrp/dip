@@ -78,7 +78,6 @@ CALL_INSTRUCTIONS = [
 # Funkce pro získání regulárního výrazu pro volání funkcí
 def get_call_instructions_regex():
     return "|".join([rf"\b{instr}\b" for instr in CALL_INSTRUCTIONS])
-    #return "|".join(CALL_INSTRUCTIONS)
 
 # Seznam návratových instrukcí pro x86 a ARM
 RETURN_INSTRUCTIONS = [

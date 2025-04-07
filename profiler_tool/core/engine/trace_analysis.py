@@ -122,6 +122,10 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
             if inside_target_function:
                 match = re.match(r"\w+,\s+(0x[0-9a-fA-F]+):\s+(\w+)", line)
                 if match:
+                    if re.match(r"\bmain\b,", line):
+                        inside_target_function = False
+                        break
+
                     address, instruction = match.groups()
                     last_executed_line = get_source_line(binary_file, address, runtime_addr_target, static_addr_target)
                     
@@ -145,9 +149,9 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
                             continue
                         
                 #if re.search(rf"\bret\b", line):
-                if re.search(return_instructions_regex, line):
-                    inside_target_function = False
-                    break
+                #if re.search(return_instructions_regex, line):
+                #    inside_target_function = False
+                #    break
             
             line = f.readline()
 
