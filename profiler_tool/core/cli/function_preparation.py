@@ -6,7 +6,7 @@ from core.engine.generator import generate_main, generate_main_klee
 from core.engine.compiler import compile_x86, compile_klee, compile_arm_linux
 from core.engine.klee_runner import get_klee_test_inputs
 from core.engine.trace_analysis import analyze_trace
-from core.config import BUILD_DIR, KLEE_OUTPUT, DEFAULT_ARCHITECTURE
+from core.config import BUILD_DIR, KLEE_OUTPUT, DEFAULT_ARCHITECTURE, KLEE_RESULTS
 from core.config import get_generated_main_path, get_generated_main_klee_path
 
 def delete_file(file_path):
@@ -144,7 +144,7 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     print(f"[INFO] Kompilace dokončena pro `{target_function}`.")
     #delete_file(get_generated_main_path())
     if use_klee:
-        prepare_klee(header_file, src_file, func_name)
+        prepare_klee(header_file, src_file, target_function)
 
     print(f"[INFO] Vytovřený binární soubor: {binary_file}")
     return binary_file
@@ -181,7 +181,9 @@ def prepare_klee(header_file=None, src_file=None, function_name=None):
     params = functions.get(target_function, [])
     param_types = [param.split()[0] for param in params]
     bitcode_file = os.path.join(klee_dir, "klee_program.bc")
-    file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types)
+
+    output_file = os.path.join(KLEE_RESULTS, f"gdb_inputs_{target_function}.txt")
+    file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types, output_file)
 
     delete_file(get_generated_main_klee_path())
     print(f"[INFO] Testovací vstupy uloženy: {file_path}")

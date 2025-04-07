@@ -15,6 +15,9 @@ TRACE_DIR = os.path.join(LOGS_DIR, "traces")
 # Adresář klee výsledků
 KLEE_OUTPUT = os.path.join(LOGS_DIR, "klee-output")
 
+# Adresář klee výsledků
+KLEE_RESULTS = os.path.join(LOGS_DIR, "klee-results")
+
 # Adresář s analýzymi
 ANALYSIS_DIR = os.path.join(LOGS_DIR, "analysis")
 
