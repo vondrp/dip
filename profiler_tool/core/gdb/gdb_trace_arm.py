@@ -1,25 +1,28 @@
 import gdb
+import re
 
 class TraceAsmARM(gdb.Command):
     def __init__(self):
         super().__init__("trace-asm-arm", gdb.COMMAND_USER)
 
+    
     def invoke(self, argument, from_tty):
         argv = gdb.string_to_argv(argument)
-        if len(argv) != 2:
+        if len(argv) != 1:
             gdb.write("Použití: trace-asm-arm <output_file> <temp_func_file>\n")
             return
 
         output_file = argv[0]
-        functions_file = argv[1]
-        function_names = set()
-        with open(functions_file) as f:
-            for line in f:
-                name = line.strip()
-                if name:
-                    function_names.add(name)
+        # Seznam zakázaných (nebo systémových) funkcí podle názvu
+  
+        def is_system_function(function_name):
+            return (
+                function_name.startswith("__") or
+                function_name.startswith("___") or
+                function_name.startswith("____") or
+                re.search(r'(libc|ld-linux|syscall|gnu|start|exit|abort|_IO_)', function_name)
+            )
 
-        gdb.write(f"Počet v funciton names: {len(function_names)}\n")
         # Pokusíme se najít textovou základnu
         text_base = "0x0"
         try:
@@ -64,7 +67,7 @@ class TraceAsmARM(gdb.Command):
                                 called_function = instr.split()[-1].strip('<>')  # Odstraníme < a > z názvu funkce
 
                                 # Pokud volaná funkce není naše, použijeme nexti
-                                if called_function not in function_names:
+                                if is_system_function(called_function):
                                     f.write(f"{function_name}, {hex(pc)}: {instr}\n")
                                     gdb.execute("nexti", to_string=True)
                                     frame = gdb.newest_frame()
