@@ -68,14 +68,14 @@ def extract_klee_inputs(klee_out_dir):
     return parsed_inputs_path
 
 
-def extract_gdb_inputs(klee_out_dir, raw_ktest_path, param_types):
+def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
     """Zpracuje výstup z `raw_ktest_outputs.txt` a extrahuje parametry pro GDB."""
 
     if not os.path.exists(raw_ktest_path):
         print(f"[ERROR] Soubor `{raw_ktest_path}` neexistuje.")
         return None, []
 
-    gdb_inputs_path = os.path.join(klee_out_dir, "gdb_test_inputs.txt")
+    #gdb_inputs_path = os.path.join(klee_out_dir, "gdb_test_inputs.txt")
     test_cases = []
     current_case = {}
 
@@ -121,15 +121,15 @@ def extract_gdb_inputs(klee_out_dir, raw_ktest_path, param_types):
         sorted_case = " ".join(str(current_case[i]) for i in sorted(current_case) if current_case[i] is not None)
         test_cases.append(sorted_case)
 
-    with open(gdb_inputs_path, "w") as f:
+    with open(output_file, "w") as f:
         for case in test_cases:
             f.write(case + "\n")
 
-    print(f"[INFO] Uloženo do `{gdb_inputs_path}`")
-    return gdb_inputs_path, test_cases
+    print(f"[INFO] Uloženo do `{output_file}`")
+    return output_file, test_cases
 
 
-def get_klee_test_inputs(build_dir, bitcode_file, param_types):
+def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file):
     """Spustí celý proces a vrátí cestu k testovacím vstupům i samotná data."""
     klee_out_dir = run_klee(build_dir, bitcode_file)
     print("run_klee finished")
@@ -142,4 +142,4 @@ def get_klee_test_inputs(build_dir, bitcode_file, param_types):
         return None, []
     
     print("before return extract gdb inputs")
-    return extract_gdb_inputs(klee_out_dir, raw_file, param_types)
+    return extract_gdb_inputs(raw_file, param_types, output_file)
