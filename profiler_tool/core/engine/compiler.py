@@ -2,8 +2,9 @@ import os
 import glob
 import re
 import subprocess
+from core.engine.generator import get_generated_main_path, get_generated_main_klee_path
+from config import log_info, log_debug
 
-from core.config import get_generated_main_path, get_generated_main_klee_path
 
 
 def find_dependencies(source_file):
@@ -37,7 +38,7 @@ def compile_klee(klee_dir, src_file, src_dir):
     main_bc = os.path.join(klee_dir, "generated_main_klee.bc")
     linked_bc = os.path.join(klee_dir, "klee_program.bc")
 
-    print(f"[INFO] 📂 Vytvářím KLEE build: {klee_dir}")
+    log_info(f"Vytvářím KLEE build: {klee_dir}")
 
     # Najdeme všechny závislé soubory
     dependencies = find_dependencies(src_file)
@@ -46,7 +47,7 @@ def compile_klee(klee_dir, src_file, src_dir):
     needed_sources.add(src_file)  # Přidáme hlavní zdrojový soubor
     needed_sources = list(needed_sources)  # Převedeme na seznam
 
-    print(f"[INFO] 📜 Překládané zdrojové soubory: {needed_sources}")
+    log_info(f"Překládané zdrojové soubory: {needed_sources}")
 
     # Překlad `generated_main_klee.c`
     subprocess.run([
@@ -66,12 +67,11 @@ def compile_klee(klee_dir, src_file, src_dir):
         ], check=True)
         bc_files.append(bc_file)
 
-    print(f"[INFO] ✅ Přeložené BC soubory: {bc_files}")
+    log_info(f"Přeložené BC soubory: {bc_files}")
 
     # Spojení všech `.bc` souborů do jednoho
     subprocess.run(["llvm-link-13", main_bc] + bc_files + ["-o", linked_bc], check=True)
-
-    print(f"[INFO] ✅ Spojený LLVM bitcode: {linked_bc}")
+    log_info(f"Spojený LLVM bitcode: {linked_bc}")
 
 
 
@@ -85,7 +85,7 @@ def compile_x86(binary_file, src_file, src_dir):
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
     compile_cmd = ["gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
-    print(f"Kompiluji: {' '.join(compile_cmd)}")
+    log_debug(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
 
 def compile_arm_linux(binary_file, src_file, src_dir):
@@ -98,7 +98,7 @@ def compile_arm_linux(binary_file, src_file, src_dir):
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
     compile_cmd = ["arm-linux-gnueabihf-gcc", "-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
-    print(f"Kompiluji: {' '.join(compile_cmd)}")
+    log_debug(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)    
 
 def compile_arm_bm(binary_file, src_file, generated_main_file):
@@ -116,5 +116,5 @@ def compile_arm_bm(binary_file, src_file, generated_main_file):
         "-o", binary_file
     ] + needed_sources
 
-    print(f"[INFO] 🛠 Kompiluji pro ARM: {' '.join(compile_cmd)}")
+    log_info(f"Kompiluji pro ARM: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)

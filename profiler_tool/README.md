@@ -278,6 +278,9 @@ sudo apt install gcc-arm-linux-gnueabihf
 
 sudo apt install gdb-multiarch
 
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
+
 
 # Instalace rozšíření pro Visual Studio Code
 

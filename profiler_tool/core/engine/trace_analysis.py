@@ -4,6 +4,8 @@ import collections
 import subprocess
 import json
 from config import get_call_instructions_regex, get_return_instructions_regex
+from config import log_info, log_debug, log_warning, log_error
+
 
 def get_static_function_address(binary_path, function_name):
     """Získá statickou adresu funkce z binárního souboru pomocí `nm -n`."""
@@ -14,7 +16,7 @@ def get_static_function_address(binary_path, function_name):
             if len(parts) == 3 and parts[1] == "T" and parts[2] == function_name:
                 return int(parts[0], 16)
     except Exception as e:
-        print(f"[ERROR] Chyba při získávání statické adresy `{function_name}`: {e}")
+        log_error(f"Chyba při získávání statické adresy `{function_name}`: {e}")
     return None
 
 def get_runtime_function_address(trace_file, function_name):
@@ -26,12 +28,12 @@ def get_runtime_function_address(trace_file, function_name):
                 match = re.search(rf"({call_instruction_regex})\s+(0x[0-9a-fA-F]+)\s+<" + re.escape(function_name) + ">", line)
                 if match:
                     runtime_addr = int(match.group(2), 16)
-                    print(f"[INFO] Runtime adresa `{function_name}`: {hex(runtime_addr)}")
+                    log_debug(f"Runtime adresa `{function_name}`: {hex(runtime_addr)}")
                     return runtime_addr
     except FileNotFoundError:
-        print(f"[ERROR] Soubor `{trace_file}` nebyl nalezen.")
+        log_error(f"Soubor `{trace_file}` nebyl nalezen.")
     except Exception as e:
-        print(f"[ERROR] Chyba při čtení souboru: {e}")
+        log_error(f"Chyba při čtení souboru: {e}")
     return None
 
 def get_source_line(binary_path, addr, runtime_addr_target, static_addr_target):
@@ -49,7 +51,7 @@ def get_source_line(binary_path, addr, runtime_addr_target, static_addr_target):
             return None
         return line
     except Exception as e:
-        print(f"[ERROR] Chyba addr2line: {e}")
+        log_error(f"Chyba addr2line: {e}")
     return None
 
 def normalize_discriminators(source_line_counts):
@@ -67,7 +69,7 @@ def count_function_instructions(file, called_function, original_function):
     instruction_count = 0
     recursion_depth = 1 if called_function == original_function else 0
 
-    print(f"[INFO] Spuštěno `count_function_instructions`, sledujeme návrat do `{original_function}` rec depth {recursion_depth}")
+    log_debug(f"Spuštěno `count_function_instructions`, sledujeme návrat do `{original_function}` rec depth {recursion_depth}")
     return_instructions_regex = get_return_instructions_regex()
 
     for line in file:
@@ -77,13 +79,13 @@ def count_function_instructions(file, called_function, original_function):
                 #if "ret" in line:
                     recursion_depth -= 1
                     if recursion_depth == 0:
-                        print(f"[DEBUG] Návrat do `{original_function}`, zastavujeme počítání")
+                        log_debug(f"Návrat do `{original_function}`, zastavujeme počítání")
                         return instruction_count, line
                 
                 instruction_count += 1
                 continue
             else:
-                print(f"[DEBUG] Návrat do `{original_function}`, zastavujeme počítání")
+                log_debug(f"[DEBUG] Návrat do `{original_function}`, zastavujeme počítání")
                 return instruction_count, line    
 
         if line.startswith("[CALL]"):
@@ -97,7 +99,7 @@ def count_function_instructions(file, called_function, original_function):
         if re.match(r"(\w+),\s+(0x[0-9a-fA-F]+):\s+(\w+)", line):
             instruction_count += 1
 
-    print(f"[WARNING] Funkce `{original_function}` se neobjevila, vracíme {instruction_count} instrukcí")
+    log_warning(f"[WARNING] Funkce `{original_function}` se při zanoření do jiné funkce nevrátila, vracíme {instruction_count} instrukcí")
     return instruction_count, None
 
 
@@ -136,12 +138,12 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
                     call_match = re.match(rf".*({call_instructions_regex})\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
                     if call_match:
                         called_function = call_match.group(2)
-                        print(f"[DEBUG] Detekováno volání `{called_function}` na řádku `{last_executed_line}`")
+                        log_debug(f"Detekováno volání `{called_function}` na řádku `{last_executed_line}`")
                         
                         call_instruction_count, last_read_line = count_function_instructions(f, called_function, function_name)    
                     
                         if last_executed_line:
-                            print(f"[DEBUG] Počet instrukcí pro `{called_function}`: {call_instruction_count}")
+                            log_debug(f"Počet instrukcí pro `{called_function}`: {call_instruction_count}")
                             source_line_counts[last_executed_line] += call_instruction_count
                         
                         if last_read_line:
@@ -159,9 +161,9 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
 
     if inside_target_function == True:
          crash_detected = inside_target_function 
-         print(f"[WARNING] Detekováno náhlé ukončení programu! Poslední řádek: `{last_executed_line}`")
+         log_warning(f"Detekováno náhlé ukončení programu! Poslední řádek: `{last_executed_line}`")
 
-    print(f"[INFO] Celkem instrukcí ve `{function_name}`: {sum(source_line_counts.values())}")
+    log_info(f"Celkem instrukcí ve `{function_name}`: {sum(source_line_counts.values())}")
     return source_line_counts, crash_detected, last_executed_line
 
 
@@ -188,13 +190,13 @@ def save_json(source_line_counts, crash_detected, crash_last_executed_line, json
     with open(json_output_path, "w") as f:
         json.dump(json_data, f, indent=4)
     
-    print(f"[INFO] Výsledky uloženy do `{json_output_path}`")
+    log_info(f"Výsledky uloženy do `{json_output_path}`")
 
 def analyze_traces_in_folder(trace_folder, output_folder, binary_file, function_name, source_file):
     """Analyzuje všechny trace logy ve složce `trace_folder` a uloží JSON výstupy do `output_folder`."""
     
     if not os.path.exists(trace_folder):
-        print(f"[ERROR] Složka `{trace_folder}` neexistuje, analýza ukončena!")
+        log_error(f"Složka `{trace_folder}` neexistuje, analýza ukončena!")
         return
 
     os.makedirs(output_folder, exist_ok=True)  # Vytvoří výstupní složku, pokud neexistuje
@@ -202,16 +204,16 @@ def analyze_traces_in_folder(trace_folder, output_folder, binary_file, function_
     trace_files = [f for f in os.listdir(trace_folder) if f.endswith(".log")]
 
     if not trace_files:
-        print(f"[WARNING] Nebyly nalezeny žádné trace logy ve složce `{trace_folder}`!")
+        log_warning(f"Nebyly nalezeny žádné trace logy ve složce `{trace_folder}`!")
         return
 
-    print(f"[INFO] Nalezeno {len(trace_files)} trace logů k analýze v `{trace_folder}`.")
+    log_info(f"Nalezeno {len(trace_files)} trace logů k analýze v `{trace_folder}`.")
 
     # Získáme statickou a runtime adresu pro testovanou funkci
     static_addr_target = get_static_function_address(binary_file, function_name)
     
     if static_addr_target is None:
-        print(f"[ERROR] Nepodařilo se získat statickou adresu pro funkci `{function_name}`, analýza přeskočena!")
+        log_error(f"Nepodařilo se získat statickou adresu pro funkci `{function_name}`, analýza přeskočena!")
         return
 
     for trace_file in trace_files:
@@ -220,18 +222,18 @@ def analyze_traces_in_folder(trace_folder, output_folder, binary_file, function_
         # Najdeme parametry z názvu souboru (trace_<function_name>_<params>.log)
         match = re.match(rf"trace_{re.escape(function_name)}_(.*)\.log", trace_file)
         if not match:
-            print(f"[WARNING] Soubor `{trace_file}` neodpovídá formátu `trace_{function_name}_<parametry>.log`, přeskočeno.")
+            log_warning(f"Soubor `{trace_file}` neodpovídá formátu `trace_{function_name}_<parametry>.log`, přeskočeno.")
             continue
 
         params_str = match.group(1)
         json_output_path = os.path.join(output_folder, f"instructions_{function_name}_{params_str}.json")
 
-        print(f"[INFO] Analyzuji `{trace_file}` (parametry: {params_str})")
+        log_info(f"Analyzuji `{trace_file}` (parametry: {params_str})")
 
         runtime_addr_target = get_runtime_function_address(trace_path, function_name)
 
         if runtime_addr_target is None:
-            print(f"[ERROR] Nepodařilo se získat runtime adresu pro `{trace_file}`, přeskočeno.")
+            log_error(f"Nepodařilo se získat runtime adresu pro `{trace_file}`, přeskočeno.")
             continue
 
         source_line_counts, crash_detected, last_executed_line = parse_trace(trace_path, runtime_addr_target, static_addr_target, binary_file, function_name)
@@ -239,7 +241,7 @@ def analyze_traces_in_folder(trace_folder, output_folder, binary_file, function_
         # Uložení do JSON pomocí save_json
         save_json(source_line_counts, crash_detected, last_executed_line, json_output_path, function_name, params_str, source_file)
 
-    print(f"[INFO] 🎉 Analýza všech trace logů ve složce `{trace_folder}` dokončena!")
+    log_info(f"Analýza všech trace logů ve složce `{trace_folder}` dokončena!")
 
 
 
@@ -254,12 +256,12 @@ def analyze_trace(trace_file, binary_file, target_function, output_json):
     """
     static_addr_target = get_static_function_address(binary_file, target_function)
     if static_addr_target is None:
-        print(f"[ERROR] Nepodařilo se získat statickou adresu pro funkci `{target_function}`!")
+        log_error(f"Nepodařilo se získat statickou adresu pro funkci `{target_function}`!")
         return
 
     runtime_addr_target = get_runtime_function_address(trace_file, target_function)
     if runtime_addr_target is None:
-        print(f"[ERROR] Nepodařilo se získat runtime adresu pro `{trace_file}`, přeskočeno.")
+        log_error(f"Nepodařilo se získat runtime adresu pro `{trace_file}`, přeskočeno.")
         return
 
     source_line_counts, crash_detected, last_executed_line = parse_trace(
@@ -275,4 +277,4 @@ def analyze_trace(trace_file, binary_file, target_function, output_json):
     source_file = first_line_key.split(":")[0]
 
     save_json(source_line_counts, crash_detected, last_executed_line, output_json, target_function, params_str, source_file)
-    print(f"[INFO] Analýza `{trace_file}` dokončena a výsledky uloženy do `{output_json}`.")    
+    log_info(f"Analýza `{trace_file}` dokončena a výsledky uloženy do `{output_json}`.")    

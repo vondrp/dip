@@ -15,28 +15,29 @@ import subprocess
 import struct
 import re
 import shutil
-from core.config import KLEE_EXECUTABLE, KLEE_OPTIONS, KTEST_TOOL
+from config import KLEE_EXECUTABLE, KLEE_OPTIONS, KTEST_TOOL
+from config import log_info, log_debug, log_warning, log_error
 
 
 def run_klee(build_dir, bitcode_file):
     """Spustí KLEE na LLVM bitcode souboru, výstupy se ukládají do 'klee-last'."""
     
     if not os.path.exists(bitcode_file):
-        print(f"[ERROR] Bitcode soubor `{bitcode_file}` nebyl nalezen. Nejprve ho vygenerujte!")
+        log_error(f"Bitcode soubor `{bitcode_file}` nebyl nalezen. Nejprve ho vygenerujte!")
         return None
 
     if not shutil.which(KLEE_EXECUTABLE):
-        print("[ERROR] KLEE není nainstalován nebo není v PATH.")
+        log_error("KLEE není nainstalován nebo není v PATH.")
         return None
 
     # Spuštění KLEE
     klee_cmd = [KLEE_EXECUTABLE] + KLEE_OPTIONS + [bitcode_file]
 
-    print(f"[INFO] Spouštím KLEE: {' '.join(klee_cmd)}")
+    log_info(f"Spouštím KLEE: {' '.join(klee_cmd)}")
     try:
         subprocess.run(klee_cmd, check=True)
     except subprocess.CalledProcessError as e:
-        print(f"[ERROR] KLEE selhal: {e}")
+        log_error(f"KLEE selhal: {e}")
         return None
 
     return os.path.join(build_dir, "klee-last")
@@ -46,13 +47,13 @@ def extract_klee_inputs(klee_out_dir):
     """Použije `ktest-tool` na výstupy KLEE a uloží je do souboru."""
     
     if not os.path.exists(klee_out_dir):
-        print("[ERROR] Výstupní složka KLEE neexistuje.")
+        log_error("Výstupní složka KLEE neexistuje.")
         return None
 
     test_files = sorted([f for f in os.listdir(klee_out_dir) if f.endswith(".ktest")])
 
     if not test_files:
-        print("[WARNING] KLEE nenalezl žádné testovací vstupy.")
+        log_error("KLEE nenalezl žádné testovací vstupy.")
         return None
     
     parsed_inputs_path = os.path.join(klee_out_dir, "raw_ktest_outputs.txt")
@@ -64,7 +65,7 @@ def extract_klee_inputs(klee_out_dir):
             f.write(f"=== {test_file} ===\n")
             f.write(result.stdout + "\n")
 
-    print(f"[INFO] Uloženo do `{parsed_inputs_path}`")
+    log_debug(f"Raw klee data uložena do `{parsed_inputs_path}`")
     return parsed_inputs_path
 
 
@@ -72,14 +73,14 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
     """Zpracuje výstup z `raw_ktest_outputs.txt` a extrahuje parametry pro GDB."""
 
     if not os.path.exists(raw_ktest_path):
-        print(f"[ERROR] Soubor `{raw_ktest_path}` neexistuje.")
+        log_error(f"Soubor raw klee dat:`{raw_ktest_path}` neexistuje.")
         return None, []
 
     #gdb_inputs_path = os.path.join(klee_out_dir, "gdb_test_inputs.txt")
     test_cases = []
     current_case = {}
 
-    print(f"PARAMETRY typy {param_types}")
+    log_debug(f"Klee má na vstupu datové typy: {param_types}")
     with open(raw_ktest_path, "r") as f:
         for line in f:
             param_match = re.match(r"object \d+: name: 'param_(\d+)'", line)
@@ -125,21 +126,18 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
         for case in test_cases:
             f.write(case + "\n")
 
-    print(f"[INFO] Uloženo do `{output_file}`")
+    log_info(f"Parametry nalezené s klee uloženy do: `{output_file}`")
     return output_file, test_cases
 
 
 def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file):
     """Spustí celý proces a vrátí cestu k testovacím vstupům i samotná data."""
     klee_out_dir = run_klee(build_dir, bitcode_file)
-    print("run_klee finished")
     if not klee_out_dir:
         return None, []
 
-    print("before extract klee inputs")
     raw_file = extract_klee_inputs(klee_out_dir)
     if not raw_file:
         return None, []
     
-    print("before return extract gdb inputs")
     return extract_gdb_inputs(raw_file, param_types, output_file)

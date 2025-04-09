@@ -1,8 +1,8 @@
 import os
 import json
 from collections import defaultdict
-
-from core.config import ANALYSIS_DIR
+from config import ANALYSIS_DIR
+from config import log_info, log_warning, log_error
 
 
 # Konstanta pro složku s JSON soubory
@@ -22,7 +22,7 @@ def load_json_files(file_paths):
                 content["file_name"] = os.path.basename(file_path)  # Přidáme název souboru
                 data.append(content)
             except json.JSONDecodeError:
-                print(f"❌ Chyba při čtení {file_path}, soubor není validní JSON.")
+                log_error(f"Chyba při čtení {file_path}, soubor není validní JSON.")
 
     return data
 
@@ -96,7 +96,7 @@ def generate_report(data, output_file):
     with open(output_file, "w") as f:
         f.write("\n".join(report_lines))
     
-    print(f"[INFO] Report uložen do {output_file}")
+    log_info(f"Report uložen do {output_file}")
 
 
 def compare_runs(folder=None, files=None):
@@ -106,12 +106,12 @@ def compare_runs(folder=None, files=None):
     elif files:
         json_files = files
     else:
-        print("[ERROR] Nebyly nalezeny žádné JSON soubory k porovnání.")
+        log_warning("Nebyly nalezeny žádné JSON soubory k porovnání.")
         return
 
     data = load_json_files(json_files)
     if not data:
-        print(f"[ERROR] Nebyly nalezeny žádné platné JSON soubory.")
+        log_warning(f"Nebyly nalezeny žádné platné JSON soubory")
         return
     
     output_file = os.path.join(folder if folder else ANALYSIS_DIR, "comparison_report.txt")
@@ -119,7 +119,7 @@ def compare_runs(folder=None, files=None):
 
 def main():
     """Hlavní funkce pro spouštění skriptu samostatně."""
-    print(f"[INFO] Spouštím porovnání pro složku: {default_analysis_folder}")
+    log_info(f"Spouštím porovnání pro složku: {default_analysis_folder}")
     compare_runs(default_analysis_folder)
 
 if __name__ == "__main__":

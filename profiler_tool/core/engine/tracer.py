@@ -4,8 +4,8 @@ import time
 import socket
 import tempfile
 import re
-
-from core.config import GDB_SCRIPT, GDB_SCRIPT_ARM
+from config import GDB_SCRIPT, GDB_SCRIPT_ARM
+from config import log_info, log_debug, log_warning, log_error
 
 
 def run_gdb_trace(binary_file, trace_file, args):
@@ -17,7 +17,7 @@ def run_gdb_trace(binary_file, trace_file, args):
         "-ex", "quit",
         "--args", binary_file, *args
     ]
-    print(f"Spouštím GDB: {' '.join(gdb_cmd)}")
+    log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
     subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
@@ -28,7 +28,7 @@ def wait_for_qemu_to_be_ready(timeout=30):
         try:
             # Pokusíme se připojit k QEMU na portu 1234 pomocí netcat (nc)
             subprocess.check_call(['nc', '-zv', 'localhost', '1234'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            print("[INFO] QEMU je připraveno na připojení.")
+            log_info("QEMU je připraveno na připojení.")
             return True
         except subprocess.CalledProcessError:
             time.sleep(2)
@@ -54,7 +54,7 @@ def run_gdb_trace_arm_linux(binary_file, trace_file, args):
         binary_file, *args
     ]
 
-    print(f"[INFO] Spouštím QEMU: {' '.join(qemu_cmd)}")
+    log_info(f"Spouštím QEMU: {' '.join(qemu_cmd)}")
     qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     time.sleep(10)
@@ -78,12 +78,12 @@ def run_gdb_trace_arm_linux(binary_file, trace_file, args):
         "-ex", "set logging enabled off",
         "-ex", "quit"
     ]
-    print(f"[INFO] 🛠 Spouštím GDB: {' '.join(gdb_cmd)}")
+    log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
     subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     # Ukončíme QEMU po dokončení trace
     qemu_proc.terminate()
-    print("[INFO] Trace dokončen, QEMU ukončen.")
+    log_info("Trace dokončen, QEMU ukončen.")
 
 
 
@@ -115,13 +115,13 @@ def run_gdb_trace_arm_bm(binary_file, trace_file, args):
     "-S"                     # Zastaví před spuštěním
     ]
 
-    print(f"[INFO] 🚀 Spouštím QEMU: {' '.join(qemu_cmd)}")
+    log_info(f"Spouštím QEMU: {' '.join(qemu_cmd)}")
     qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 
     # Počkáme, než se QEMU inicializuje
     time.sleep(10)
-    print(f"[INFO] gdb binary file: {binary_file}")
+    log_info(f"gdb binary file: {binary_file}")
     
     # Spustíme GDB pro ARM
     gdb_cmd = [
@@ -140,9 +140,9 @@ def run_gdb_trace_arm_bm(binary_file, trace_file, args):
         "-ex", "quit"
     ]
 
-    print(f"[INFO] 🛠 Spouštím GDB: {' '.join(gdb_cmd)}")
+    log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
     subprocess.run(gdb_cmd, check=True)
 
     # Ukončíme QEMU po dokončení trace
     qemu_proc.terminate()
-    print("[INFO] race dokončen, QEMU ukončen.")
+    log_info("Trace dokončen, QEMU ukončen.")

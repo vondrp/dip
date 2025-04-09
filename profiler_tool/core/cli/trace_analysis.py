@@ -3,7 +3,9 @@ import re
 from core.cli.file_selection import fzf_select_file
 from core.engine.tracer import run_gdb_trace, run_gdb_trace_arm_linux
 from core.engine.trace_analysis import analyze_trace
-from core.config import BUILD_DIR, TRACE_DIR, ANALYSIS_DIR, DEFAULT_ARCHITECTURE
+from config import BUILD_DIR, TRACE_DIR, ANALYSIS_DIR, DEFAULT_ARCHITECTURE
+from config import log_info, log_debug, log_warning, log_error
+
 
 def extract_function_name(binary_file):
     """Extrahuje jméno funkce z názvu binárního souboru."""
@@ -15,11 +17,11 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
     """Umožní uživateli vybrat binární soubor a spustit trace pro více sad parametrů."""
 
     if not binary_file:
-        print("\n[INFO] Vyber binární soubor:")
+        log_info("\n Vyber binární soubor:")
         binary_file = fzf_select_file(".out", BUILD_DIR)
 
     if not binary_file or not os.path.exists(binary_file):
-        print("[ERROR] Nebyla vybrána žádná binárka.")
+        log_error("Nebyl vybrán binární soubor!")
         return
 
     func_name = extract_function_name(binary_file)
@@ -28,7 +30,7 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
     # Načtení parametrů ze souboru, pokud je zadán
     if param_file:
         if not os.path.exists(param_file):
-            print(f"[ERROR] Soubor {param_file} neexistuje!")
+            log_error(f"Soubor s parametry {param_file} neexistuje!")
             return
 
         with open(param_file, "r") as f:
@@ -36,13 +38,13 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
                 params = line.strip().split()
                 param_sets.append(params)
         
-        print(f"[INFO] Načteno {len(param_sets)} sad parametrů ze souboru `{param_file}`.")
+        log_info(f"Načteno {len(param_sets)} sad parametrů ze souboru `{param_file}`.")
 
     # Ruční zadání parametrů, pokud nebyl dodán soubor
     if not param_sets:
-        print("\n[INFO] Zadej sady parametrů pro spuštění (každou sadu potvrď Enterem).")
-        print("[INFO] Dvakrát Enter (prázdný řádek) ukončí zadávání.")
-        print("[INFO] Pokud funkce nemá žádné parametry, jen stiskni Enter.")
+        log_info("\n Zadej sady parametrů pro spuštění (každou sadu potvrď Enterem).")
+        log_info("Dvakrát Enter (prázdný řádek) ukončí zadávání.")
+        log_info("Pokud funkce nemá žádné parametry, jen stiskni Enter.")
 
         while True:
             param_input = input("[INPUT] Parametry: ").strip()
@@ -61,17 +63,17 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
 
         if architecture == "arm":
             trace_file = os.path.join(TRACE_DIR, f"traceArm_{func_name}_{param_str}.log")
-            print(f"\n[INFO] Spouštím trace pro {binary_file} s parametry {params}")
+            log_info(f"\n Spouštím trace pro {binary_file} s parametry {params}")
             run_gdb_trace_arm_linux(binary_file, trace_file, params)
             json_filename = f"instructionsArm_{func_name}_{param_str}.json"
         else:    
             trace_file = os.path.join(TRACE_DIR, f"trace_{func_name}_{param_str}.log")
-            print(f"\n[INFO] Spouštím trace pro {binary_file} s parametry {params}")
+            log_info(f"\n Spouštím trace pro {binary_file} s parametry {params}")
             run_gdb_trace(binary_file, trace_file, params)
             json_filename = f"instructions_{func_name}_{param_str}.json"
 
 
-        print(f"[INFO] Trace dokončen! Výstup: {trace_file}")
+        log_info(f"Trace dokončen! Výstup: {trace_file}")
 
         # Spuštění analýzy trace souboru
         output_json_dir = os.path.join(ANALYSIS_DIR, func_name)
@@ -79,7 +81,7 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
                 
         output_json = os.path.join(output_json_dir, json_filename)
 
-        print(f"\n[INFO] Probíhá analýza pro trace soubor: {trace_file}")
+        log_info(f"\n Probíhá analýza pro trace soubor: {trace_file}")
         analyze_trace(trace_file, binary_file, func_name, output_json)
-        print(f"[INFO] Analýza dokončena! Výstupní soubor: {output_json}")
+        log_info(f"Analýza dokončena! Výstupní soubor: {output_json}")
     return output_json
