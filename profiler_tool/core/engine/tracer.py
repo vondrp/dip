@@ -47,7 +47,6 @@ def run_gdb_trace_arm_linux(binary_file, trace_file, args):
     if not gdb_executable:
         raise FileNotFoundError("[ERROR]  `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
 
-
     # Spustíme QEMU v GDB server módu
     qemu_cmd = [
         qemu_executable,"-g", "1234",
@@ -71,7 +70,7 @@ def run_gdb_trace_arm_linux(binary_file, trace_file, args):
         "-ex", "set logging enabled on",
         "-ex", f"file {binary_file}",
         "-ex", "target remote localhost:1234",
-        "-ex", "info registers",
+       #"-ex", "info registers",
         "-ex", f"break main",
         "-ex", f"continue",
         "-ex", f"trace-asm-arm {trace_file}",

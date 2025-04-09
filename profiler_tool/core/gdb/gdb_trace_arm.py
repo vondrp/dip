@@ -1,5 +1,42 @@
 import gdb
 import re
+import json
+import os
+
+
+# ---------- trace_config.py LOGIKA ----------
+CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "config", "trace_config.json"))
+
+_blacklist_patterns = []
+_blacklist_regexes = []
+
+def _load_blacklist_config():
+    global _blacklist_patterns, _blacklist_regexes
+
+    try:
+        gdb.write(f"[INFO] Načítám konfiguraci z {CONFIG_PATH}\n")
+        if not os.path.exists(CONFIG_PATH):
+            gdb.write(f"[WARN] Soubor nenalezen: {CONFIG_PATH}\n")
+            return
+
+        with open(CONFIG_PATH, "r") as f:
+            config = json.load(f)
+            _blacklist_patterns = config.get("function_blacklist_patterns", [])
+            _blacklist_regexes = [re.compile(p) for p in _blacklist_patterns]
+
+        gdb.write(f"[INFO] Načteno {len(_blacklist_patterns)} vzorů pro blacklist.\n")
+
+    except Exception as e:
+        gdb.write(f"[ERROR] Nepodařilo se načíst konfiguraci: {e}\n")
+
+def is_blacklisted_function(function_name: str) -> bool:
+    if not _blacklist_regexes:
+        _load_blacklist_config()
+
+    return any(regex.search(function_name) for regex in _blacklist_regexes)
+
+# ---------- konec trace_config.py LOGIKY ----------
+
 
 class TraceAsmARM(gdb.Command):
     def __init__(self):
@@ -67,7 +104,7 @@ class TraceAsmARM(gdb.Command):
                                 called_function = instr.split()[-1].strip('<>')  # Odstraníme < a > z názvu funkce
 
                                 # Pokud volaná funkce není naše, použijeme nexti
-                                if is_system_function(called_function):
+                                if is_blacklisted_function(called_function):
                                     f.write(f"{function_name}, {hex(pc)}: {instr}\n")
                                     gdb.execute("nexti", to_string=True)
                                     frame = gdb.newest_frame()

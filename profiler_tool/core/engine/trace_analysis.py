@@ -76,7 +76,6 @@ def count_function_instructions(file, called_function, original_function):
         if line.startswith(f"{original_function},"):
             if recursion_depth > 0:
                 if re.search(return_instructions_regex, line):
-                #if "ret" in line:
                     recursion_depth -= 1
                     if recursion_depth == 0:
                         log_debug(f"Návrat do `{original_function}`, zastavujeme počítání")
@@ -137,7 +136,7 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
                     # volani funkci uvnitr testovane funkce
                     call_match = re.match(rf".*({call_instructions_regex})\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
                     if call_match:
-                        called_function = call_match.group(2)
+                        called_function = call_match.group(3)
                         log_debug(f"Detekováno volání `{called_function}` na řádku `{last_executed_line}`")
                         
                         call_instruction_count, last_read_line = count_function_instructions(f, called_function, function_name)    

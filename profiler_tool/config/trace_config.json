@@ -1,0 +1,8 @@
+{
+    "function_blacklist_patterns": [
+        "^__",
+        "^___",
+        "^____",
+        "_IO_"
+    ]
+}
