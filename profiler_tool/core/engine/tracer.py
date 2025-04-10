@@ -7,6 +7,13 @@ import re
 from config import GDB_SCRIPT, GDB_SCRIPT_ARM
 from config import log_info, log_debug, log_warning, log_error
 
+"""
+Tento skript obsahuje funkce pro automatizaci traceování ARM binárek v QEMU prostředí s využitím GDB.
+Hlavním účelem skriptu je spuštění binárního souboru v emulátoru QEMU, připojení GDB pro ladění,
+a následné traceování instrukcí ARM. Skript také implementuje čekání na připravenost QEMU pomocí 
+kontroly otevřeného portu 1234 (použití netstat) a provádí traceování jak pro standardní ARM aplikace, 
+tak i pro specifické ARM buildy.
+"""
 
 def run_gdb_trace(binary_file, trace_file, args):
     """Spustí GDB s vybranými parametry a zachytí instrukce do `trace.log`."""
@@ -20,29 +27,29 @@ def run_gdb_trace(binary_file, trace_file, args):
     log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
     subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-
-
-def wait_for_qemu_to_be_ready(timeout=30):
-    """ Čeká na to, až QEMU bude připraveno na připojení přes GDB. """
+def wait_for_qemu_ready(timeout=30):
+    """ Čeká na to, až bude QEMU připraveno na připojení (používá netstat). """
     for _ in range(timeout):
         try:
-            # Pokusíme se připojit k QEMU na portu 1234 pomocí netcat (nc)
-            subprocess.check_call(['nc', '-zv', 'localhost', '1234'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
-            log_info("QEMU je připraveno na připojení.")
-            return True
+            result = subprocess.run(
+                ['netstat', '-tuln'], stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True
+            )
+            if '1234' in result.stdout and 'LISTEN' in result.stdout:
+                return True 
         except subprocess.CalledProcessError:
-            time.sleep(2)
-    # Pokud po timeoutu není možné připojit, vyhodíme výjimku
+            pass
+        time.sleep(2)
     return False
+
 
 def run_gdb_trace_arm_linux(binary_file, trace_file, args):
     """ Spustí ARM Linux binárku v QEMU, připojí GDB a provede tracing. """
-    # 🔹 Ověření dostupnosti QEMU pro Linuxový ARM
+    # Ověření dostupnosti QEMU pro Linuxový ARM
     qemu_executable = shutil.which("qemu-arm")# or shutil.which("qemu-system-arm")
     if not qemu_executable:
         raise FileNotFoundError("[ERROR] `qemu-arm` nebo `qemu-system-arm` nebyl nalezen. Zkontrolujte instalaci.")
 
-    # 🔹 Ověření dostupnosti GDB multiarch
+    # Ověření dostupnosti GDB multiarch
     gdb_executable = shutil.which("gdb-multiarch")
     if not gdb_executable:
         raise FileNotFoundError("[ERROR]  `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
@@ -56,7 +63,9 @@ def run_gdb_trace_arm_linux(binary_file, trace_file, args):
     log_info(f"Spouštím QEMU: {' '.join(qemu_cmd)}")
     qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    time.sleep(10)
+    # Čekáme, dokud QEMU nebude připraveno na připojení
+    if not wait_for_qemu_ready():
+        raise RuntimeError("[ERROR] QEMU není připraveno na připojení během timeoutu.")
 
     # Spustíme GDB a připojíme se k QEMU
     gdb_cmd = [
@@ -94,7 +103,7 @@ def run_gdb_trace_arm_bm(binary_file, trace_file, args):
     if not qemu_executable:
         raise FileNotFoundError("[ERROR] `qemu-system-arm` nebyl nalezen. Zkontrolujte instalaci.")
 
-    # 🔹 Ověření dostupnosti GDB pro ARM
+    # Ověření dostupnosti GDB pro ARM
     gdb_executable = shutil.which("arm-none-eabi-gdb") or shutil.which("gdb-multiarch")
     if not gdb_executable:
         raise FileNotFoundError("[ERROR] `arm-none-eabi-gdb` nebo `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
@@ -117,10 +126,8 @@ def run_gdb_trace_arm_bm(binary_file, trace_file, args):
     log_info(f"Spouštím QEMU: {' '.join(qemu_cmd)}")
     qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-
-    # Počkáme, než se QEMU inicializuje
-    time.sleep(10)
-    log_info(f"gdb binary file: {binary_file}")
+    if not wait_for_qemu_ready():
+        raise RuntimeError("[ERROR] QEMU není připraveno na připojení během timeoutu.")
     
     # Spustíme GDB pro ARM
     gdb_cmd = [
@@ -132,7 +139,7 @@ def run_gdb_trace_arm_bm(binary_file, trace_file, args):
         "-ex", "target remote localhost:1234",
         "-ex", "set $pc = 0x8000",   
         "-ex", "set $sp = 0x810000",
-        "-ex", "info registers",      # Výpis registrů pro kontrolu
+        #"-ex", "info registers",
         "-ex", f"source {GDB_SCRIPT_ARM_BM}",
         "-ex", "starti",
         "-ex", f"trace-asm-arm {trace_file}",

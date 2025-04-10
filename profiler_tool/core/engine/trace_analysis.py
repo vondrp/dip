@@ -77,6 +77,7 @@ def count_function_instructions(file, called_function, original_function):
             if recursion_depth > 0:
                 if re.search(return_instructions_regex, line):
                     recursion_depth -= 1
+                    log_debug(f"Zmenšení úrovně zanoření provedeno na řáce: {line}")
                     if recursion_depth == 0:
                         log_debug(f"Návrat do `{original_function}`, zastavujeme počítání")
                         return instruction_count, line
@@ -84,7 +85,7 @@ def count_function_instructions(file, called_function, original_function):
                 instruction_count += 1
                 continue
             else:
-                log_debug(f"[DEBUG] Návrat do `{original_function}`, zastavujeme počítání")
+                log_debug(f"Návrat do `{original_function}`, zastavujeme počítání")
                 return instruction_count, line    
 
         if line.startswith("[CALL]"):
