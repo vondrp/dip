@@ -144,7 +144,7 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
         compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
 
     log_info(f"Kompilace dokončena pro `{target_function}`.")
-    #delete_file(get_generated_main_path())
+    delete_file(get_generated_main_path())
     if use_klee:
         prepare_klee(header_file, src_file, target_function)
 
@@ -152,7 +152,7 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     return binary_file
     
 
-def prepare_klee(header_file=None, src_file=None, function_name=None):
+def prepare_klee(header_file=None, src_file=None, function_name=None, architecture="native"):
     """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru pro KLEE."""
     header_file = select_header_file(header_file)
     functions = extract_function_from_header(header_file)
@@ -176,7 +176,7 @@ def prepare_klee(header_file=None, src_file=None, function_name=None):
     log_info("Kompilace pro KLEE...")
     klee_dir = os.path.join(KLEE_OUTPUT, target_function)
     os.makedirs(klee_dir, exist_ok=True)
-    compile_klee(klee_dir, src_file, os.path.dirname(src_file))
+    compile_klee(klee_dir, src_file, os.path.dirname(src_file), target_arch=architecture)
     log_info(f"Kompilace pro KLEE dokončena.")
 
     # Vygenerování testovacích vstupů pro KLEE
@@ -185,7 +185,7 @@ def prepare_klee(header_file=None, src_file=None, function_name=None):
     bitcode_file = os.path.join(klee_dir, "klee_program.bc")
 
     output_file = os.path.join(KLEE_RESULTS, f"gdb_inputs_{target_function}.txt")
-    file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types, output_file)
+    file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types, output_file, target_arch=architecture)
 
     delete_file(get_generated_main_klee_path())
     log_info(f"Testovací vstupy uloženy: {file_path}")

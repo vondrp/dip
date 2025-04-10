@@ -130,9 +130,13 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
     return output_file, test_cases
 
 
-def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file):
+def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file, target_arch="native"):
     """Spustí celý proces a vrátí cestu k testovacím vstupům i samotná data."""
-    klee_out_dir = run_klee(build_dir, bitcode_file)
+    if target_arch == "arm":
+        klee_out_dir = run_klee_with_qemu(build_dir, bitcode_file)
+    else:
+        klee_out_dir = run_klee(build_dir, bitcode_file)
+    
     if not klee_out_dir:
         return None, []
 
@@ -141,3 +145,36 @@ def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file):
         return None, []
     
     return extract_gdb_inputs(raw_file, param_types, output_file)
+
+
+
+def run_klee_with_qemu(build_dir, bitcode_file, qemu_executable="qemu-arm"):
+    """Spustí KLEE na LLVM bitcode souboru v emulovaném ARM prostředí pomocí QEMU."""
+    
+    # Ověření dostupnosti QEMU pro ARM
+    if not shutil.which(qemu_executable):
+        raise FileNotFoundError(f"[ERROR] `{qemu_executable}` nebyl nalezen. Zkontrolujte instalaci.")
+
+    # Ověření, že KLEE je dostupné
+    if not shutil.which(KLEE_EXECUTABLE):
+        raise FileNotFoundError(f"[ERROR] `{KLEE_EXECUTABLE}` není nainstalováno nebo není v PATH.")
+
+    # Vytvoření příkazu pro spuštění KLEE pomocí QEMU
+    klee_cmd = [
+        qemu_executable,
+        KLEE_EXECUTABLE,
+        *KLEE_OPTIONS,
+        bitcode_file
+    ]
+
+    log_info(f"Spouštím KLEE na emulovaném ARM prostředí: {' '.join(map(str, klee_cmd))}") 
+
+    try:
+        # Spustíme KLEE s QEMU
+        subprocess.run(klee_cmd, check=True)
+    except subprocess.CalledProcessError as e:
+        log_error(f"KLEE selhal: {e}")
+        return None
+
+    log_info("KLEE dokončeno. Výsledky by měly být uloženy ve 'klee-last'.")
+    return os.path.join(build_dir, "klee-last")

@@ -30,7 +30,7 @@ def map_headers_to_sources(src_dir):
     return header_to_source
 
 
-def compile_klee(klee_dir, src_file, src_dir):
+def compile_klee(klee_dir, src_file, src_dir, target_arch="native"):
     """Přeloží program pro použití s KLEE a uloží výstup do `klee_dir`."""
     
     generated_main_klee = get_generated_main_klee_path()
@@ -49,9 +49,23 @@ def compile_klee(klee_dir, src_file, src_dir):
 
     log_info(f"Překládané zdrojové soubory: {needed_sources}")
 
+    # Příprava kompilátorových přepínačů pro ARM nebo x86
+    arch_flags = []
+    if target_arch == "native":
+        # Pokud je target "native", nebudeme měnit architekturu
+        log_info("Kompilace pro nativní platformu.")
+    elif target_arch == "aarch64":
+        arch_flags = ["-target", "aarch64-linux-gnu"]  # Pro ARM64
+    elif target_arch == "arm":
+        arch_flags = ["-target", "arm-linux-gnueabi"]  # Pro ARM32
+    else:
+        arch_flags = ["-target", "x86_64-linux-gnu"]  # Výchozí pro x86_64
+
     # Překlad `generated_main_klee.c`
     subprocess.run([
         "clang-13", "-emit-llvm", "-g", "-c",
+        *arch_flags,  # Přidáme architekturu
+        "-static" if target_arch != "native" else "",  # Statická kompilace pro cizí platformu (ne pro native)
         "",  # Cesta ke klee.h
         generated_main_klee, "-o", main_bc
     ], check=True)
@@ -62,6 +76,8 @@ def compile_klee(klee_dir, src_file, src_dir):
         bc_file = os.path.join(klee_dir, os.path.basename(src).replace(".c", ".bc"))
         subprocess.run([
             "clang-13", "-emit-llvm", "-g", "-c",
+            "-static" if target_arch != "native" else "",  # Statická kompilace pro cizí platformu (ne pro native)
+            *arch_flags,
             "-DMAIN_DEFINED",
             src, "-o", bc_file
         ], check=True)

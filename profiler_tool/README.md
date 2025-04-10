@@ -316,3 +316,7 @@ sudo add-apt-repository ppa:ubuntu-toolchain-r/test
     ```
 
 Tímto způsobem máte připravené všechny potřebné nástroje pro vývoj a testování.
+
+
+# Nainstalovat když se chce zkompilovat clang (klee) pro platformu arm
+sudo apt-get install gcc-arm-linux-gnueabi
