@@ -4,20 +4,27 @@ import { highlightLines, setupHoverProvider } from './utils/decorations';
 import { selectFile, loadJsonFile } from './utils/fileUtils';
 import { runPythonScript, runPythonScriptReturn } from './utils/pythonRunner';
 
+/**
+ * Aktivuje rozšíření Profiler, registruje příkazy a poskytuje Sidebar.
+ * Tento kód inicializuje všechny příkazy a služby, které jsou k dispozici
+ * po aktivaci rozšíření v prostředí Visual Studio Code.
+ * 
+ * @param context - Kontext rozšíření, který obsahuje informace o stavu rozšíření a správu životního cyklu.
+ */
 export function activate(context: vscode.ExtensionContext) {
     console.log('Profiler Extension is now active!');
     
-    // Registrace Sidebaru
+    // Registrace Sidebaru do VS Code
     const sidebarProvider = new ProfilerSidebarProvider(context);
     console.log("Registering sidebar provider");
     context.subscriptions.push(
         vscode.window.registerWebviewViewProvider(ProfilerSidebarProvider.viewType, sidebarProvider)
     );
 
-    
-    // Příkazy
+    // Registrace příkazů, které jsou dostupné pro uživatele v příkazové paletě
     context.subscriptions.push(
         vscode.commands.registerCommand('profiler-extension.highlightCode', async () => {
+            // Příkaz pro zvýraznění kódu na základě souboru JSON s instrukcemi
             const fileUri = await vscode.window.showOpenDialog({
                 canSelectMany: false,
                 openLabel: 'Select JSON file',
@@ -29,6 +36,7 @@ export function activate(context: vscode.ExtensionContext) {
             const data = loadJsonFile(jsonFilePath);
             if (!data) return;
             
+            // Otevření souboru a aplikování zvýraznění na základě dat z JSON
             vscode.workspace.openTextDocument(data.source_file).then(document => {
                 vscode.window.showTextDocument(document).then(() => {
                     highlightLines(document, data.instructions, data.crash_last_executed_line);
@@ -37,6 +45,7 @@ export function activate(context: vscode.ExtensionContext) {
         }),
         
         vscode.commands.registerCommand('profiler.prepareFunction', async () => {
+            // Příkaz pro přípravu funkce pro analýzu
             const headerFile = await selectFile('Vyber hlavičkový soubor (.h)', ['h']);
             const sourceFile = await selectFile('Vyber zdrojový soubor (.c)', ['c']);
             if (!headerFile || !sourceFile) return;
@@ -46,16 +55,20 @@ export function activate(context: vscode.ExtensionContext) {
             
             const useKlee = await vscode.window.showQuickPick(['Ano', 'Ne'], { placeHolder: 'Použít KLEE analýzu?' });
             const kleeFlag = useKlee === 'Ano' ? '--klee' : '';
+            
+            // Spuštění Python skriptu pro přípravu funkce
             runPythonScript('core.cli', `prepare-function -H "${headerFile}" -c "${sourceFile}" -f "${functionName}" ${kleeFlag}`);
         }),
 
         vscode.commands.registerCommand('profiler.traceAnalysis', async () => {
+            // Příkaz pro analýzu trace souboru (binární soubor)
             const binaryFile = await selectFile('Vyber binární soubor', ['out']);
             if (!binaryFile) return;
             runPythonScript('core.cli', `trace-analysis -b "${binaryFile}"`);
         }),
 
         vscode.commands.registerCommand('profiler.compareRuns', async () => {
+            // Příkaz pro porovnání výsledků více běhů
             const folderUri = await vscode.window.showOpenDialog({
                 canSelectFolders: true,
                 canSelectMany: false,
@@ -66,6 +79,7 @@ export function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('profiler.kleeAnalysis', async () => {
+            // Příkaz pro provedení analýzy pomocí nástroje KLEE
             const headerFile = await selectFile('Vyber hlavičkový soubor (.h)', ['h']);
             const sourceFile = await selectFile('Vyber zdrojový soubor (.c)', ['c']);
             if (!headerFile || !sourceFile) return;
@@ -80,25 +94,25 @@ export function activate(context: vscode.ExtensionContext) {
         }),
 
         vscode.commands.registerCommand('profiler.functionAnalysis', async () => {
+            // Příkaz pro analýzu funkce
             const headerFile = await selectFile('Vyber hlavičkový soubor (.h)', ['h']);
             const sourceFile = await selectFile('Vyber zdrojový soubor (.c)', ['c']);
             if (!headerFile || !sourceFile) return;
             
             const functionName = await vscode.window.showInputBox({ prompt: 'Zadejte název funkce (nepovinné)' });
-            let resultPath: string; // definice proměnné před podmínkou
+            let resultPath: string; // definice proměnné pro uchování cesty k výsledku analýzy
 
             if (!functionName) {
                 console.log("Funkce není zadána, pokračujeme bez funkce");
                 resultPath = await runPythonScriptReturn('core.cli.main', `func-analyze -H "${headerFile}" -c "${sourceFile}" -f "${functionName}"`);
-                //runPythonScript('core.cli', `func-analyze -H "${headerFile}" -c "${sourceFile}"`);
             } else {
                 resultPath = await runPythonScriptReturn('core.cli.main', `func-analyze -H "${headerFile}" -c "${sourceFile}" -f "${functionName}"`);
-                //runPythonScript('core.cli', `func-analyze -H "${headerFile}" -c "${sourceFile}" -f "${functionName}"`);
             }
             
             const data = loadJsonFile(resultPath);
             if (!data) return;
             
+            // Otevření souboru a aplikování zvýraznění na základě výsledků analýzy
             vscode.workspace.openTextDocument(data.source_file).then(document => {
                 vscode.window.showTextDocument(document).then(() => {
                     highlightLines(document, data.instructions, data.crash_last_executed_line);
@@ -107,8 +121,12 @@ export function activate(context: vscode.ExtensionContext) {
         })
     );
     
-    // Hover info
+    // Registrace hover provideru pro zobrazení počtu instrukcí při najetí myší
     context.subscriptions.push(setupHoverProvider());
 }
 
+/**
+ * Deaktivuje rozšíření Profiler.
+ * Tento kód bude spuštěn při deaktivaci rozšíření.
+ */
 export function deactivate() {}

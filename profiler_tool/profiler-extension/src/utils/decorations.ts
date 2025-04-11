@@ -6,7 +6,11 @@ let instructionMap = new Map<string, number>(); // Globální mapa pro instrukce
 let activeDecorations: vscode.TextEditorDecorationType[] = []; // Globální seznam aktivních dekorací
 let cachedConfig: any = null; // Uložená konfigurace
 
-// Funkce pro rekurzivní hledání souboru `highlightSettings.json`
+/**
+ * Rekurzivně hledá soubor `highlightSettings.json` ve zadaném adresáři.
+ * @param dir - Cesta k adresáři, ve kterém hledáme konfigurační soubor.
+ * @returns Cesta k souboru, pokud je nalezen, jinak `null`.
+ */
 function findConfigFile(dir: string): string | null {
     try {
         const files = fs.readdirSync(dir);
@@ -29,7 +33,10 @@ function findConfigFile(dir: string): string | null {
     return null;
 }
 
-// Funkce pro načtení konfigurace (pouze jednou)
+/**
+ * Načte konfiguraci z JSON souboru, pokud již nebyla načtena.
+ * @returns Vrací konfiguraci jako objekt nebo `null`, pokud došlo k chybě při načítání.
+ */
 function loadConfig(): any {
     if (cachedConfig) return cachedConfig; // Použijeme uloženou konfiguraci
 
@@ -56,6 +63,12 @@ function loadConfig(): any {
     return null;
 }
 
+/**
+ * Vytvoří dekoraci pro zvýraznění řádku na základě počtu instrukcí a případného pádu programu.
+ * @param instructionCount - Počet instrukcí na daném řádku.
+ * @param isCrash - Určuje, zda tento řádek odpovídá místu pádu programu.
+ * @returns Dekoraci pro editor, která bude aplikována na daný řádek.
+ */
 export function getDecorationType(instructionCount: number, isCrash: boolean): vscode.TextEditorDecorationType {
     const config = loadConfig() || {}; // Pokud není config, použijeme prázdný objekt
 
@@ -81,6 +94,12 @@ export function getDecorationType(instructionCount: number, isCrash: boolean): v
     });
 }
 
+/**
+ * Zvýrazní řádky v dokumentu na základě počtu instrukcí.
+ * @param document - Dokument, ve kterém budou řádky zvýrazněny.
+ * @param instructions - Mapa, která obsahuje počet instrukcí pro každý řádek.
+ * @param crashLine - (Volitelné) Řádek, kde došlo k pádu programu.
+ */
 export function highlightLines(document: vscode.TextDocument, instructions: { [key: string]: number }, crashLine?: string) {
     const editor = vscode.window.visibleTextEditors.find(e => e.document === document);
     if (!editor) return;
@@ -106,13 +125,17 @@ export function highlightLines(document: vscode.TextDocument, instructions: { [k
     }
 }
 
+/**
+ * Nastaví poskytovatele hover efektů pro zobrazení počtu instrukcí na daném řádku.
+ * @returns Vrací instanci `vscode.Disposable` pro správu životního cyklu poskytovatele.
+ */
 export function setupHoverProvider(): vscode.Disposable {
     return vscode.languages.registerHoverProvider('*', {
         provideHover(document, position) {
             const line = position.line + 1;
             const key = `${document.uri.toString()}:${line}`;
             if (instructionMap.has(key)) {
-                return new vscode.Hover(`💡 Počet instrukcí: **${instructionMap.get(key)}**`);
+                return new vscode.Hover(`Počet instrukcí: **${instructionMap.get(key)}**`);
             }
             return null;
         }

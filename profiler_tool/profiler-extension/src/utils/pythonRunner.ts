@@ -4,11 +4,21 @@ import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
 
+/**
+ * Vygeneruje dočasný soubor pro uchování výsledků.
+ * @returns Cesta k vygenerovanému dočasnému souboru.
+ */
 function generateTempFile(): string {
     const random = crypto.randomBytes(8).toString('hex');
     return path.join(os.tmpdir(), `profiler-result-${random}.txt`);
 }
 
+/**
+ * Spustí Python skript a vrátí výstup do souboru.
+ * @param module - Název modulu, který se má spustit.
+ * @param args - Argumenty pro spuštění modulu.
+ * @returns Vrátí obsah výsledného souboru po jeho vytvoření a zápisu.
+ */
 export async function runPythonScriptReturn(module: string, args: string): Promise<string> {
     const tempFile = generateTempFile();
     const fullCommand = `python3 -m ${module} ${args} --result-file "${tempFile}"`;
@@ -26,7 +36,11 @@ export async function runPythonScriptReturn(module: string, args: string): Promi
     return await watchForFileChange(tempFile);
 }
 
-// Čeká na zápis do souboru pomocí fs.watchFile
+/**
+ * Čeká na zápis do souboru pomocí `fs.watchFile` a vrací obsah souboru.
+ * @param filePath - Cesta k souboru, který bude sledován.
+ * @returns Vrátí obsah souboru, jakmile bude zapsán.
+ */
 function watchForFileChange(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
         const checkAndResolve = () => {
@@ -44,6 +58,11 @@ function watchForFileChange(filePath: string): Promise<string> {
     });
 }
 
+/**
+ * Spustí Python skript v terminálu bez čekání na výstup.
+ * @param module - Název modulu, který se má spustit.
+ * @param args - Argumenty pro spuštění modulu.
+ */
 export async function runPythonScript(module: string, args: string) {
     const pythonPath = 'python3';
     const shell = process.env.SHELL || 'sh';
