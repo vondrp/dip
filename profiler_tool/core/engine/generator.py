@@ -2,15 +2,20 @@ import os
 from config import DEFAULT_GENERATED_MAIN, DEFAULT_GENERATED_MAIN_KLEE
 from config import log_debug
 
+# Skript pro generování hlavních souborů (`generated_main.c`, `generated_main_klee.c`, `generated_main_arm.c`)
+# pro různé typy kompilací a analýz (KLEE, ARM bare-metal, x86/ARM).
+
 # Veřejná proměnná pro cestu k generovanému souboru
 _generated_main_path = DEFAULT_GENERATED_MAIN
 
 # Getter pro cestu k generated_main.c
 def get_generated_main_path():
+    """Vrátí cestu k souboru `generated_main.c`."""
     return _generated_main_path
 
 # Setter pro cestu k generated_main.c (pokud bude potřeba)
 def set_generated_main_path(new_path):
+    """Nastaví cestu k souboru `generated_main.c`."""
     global _generated_main_path
     _generated_main_path = new_path
 
@@ -20,27 +25,37 @@ _generated_main_klee_path = DEFAULT_GENERATED_MAIN_KLEE
 
 # Getter pro cestu k generated_main_klee.c
 def get_generated_main_klee_path():
+    """Vrátí cestu k souboru `generated_main_klee.c`."""
     return _generated_main_klee_path
 
 # Setter pro cestu k generated_main_klee.c (pokud bude potřeba)
 def set_generated_main_klee_path(new_path):
+    """Nastaví cestu k souboru `generated_main_klee.c`."""
     global _generated_main_klee_path
     _generated_main_klee_path = new_path
 
 def generate_main_klee(target_function, params, header_file):
+    """
+    Vytvoří `generated_main_klee.c` pro analýzu s KLEE.
 
+    Tento soubor bude obsahovat kód, který umožňuje spustit funkci s 
+    symbolickými parametry, které budou použity v analýze s nástrojem KLEE.
+    
+    Args:
+    - target_function (str): Název testované funkce.
+    - params (list): Seznam parametrů funkce.
+    - header_file (str): Cesta k hlavičkovému souboru obsahujícímu deklaraci funkce.
+    """
+    
     generated_main_klee_path = os.path.join(os.path.dirname(header_file), "generated_main_klee.c")
     set_generated_main_klee_path(generated_main_klee_path)
 
     header_filename = os.path.basename(header_file)
 
-    """Vytvoří `generated_main_klee.c` pro analýzu s KLEE."""
     with open(generated_main_klee_path, "w") as f:
         f.write('#include <klee/klee.h>\n')
         f.write('#include <stdio.h>\n\n')
         f.write(f'#include "{header_filename}"\n\n')
-
-        #f.write(f'extern void {target_function}({", ".join(params)});\n\n')
 
         f.write("int main() {\n")
 
@@ -71,11 +86,20 @@ def generate_main_klee(target_function, params, header_file):
 
         f.write("    return 0;\n}\n")
     log_debug(f"Vygenerován `generated_main_klee.c`.")
-    
 
 def generate_main(target_function, params, header_file):
-    """Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky."""
+    """
+    Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky.
 
+    Tento soubor obsahuje funkci `main`, která přijímá argumenty z příkazové řádky,
+    konvertuje je do odpovídajících typů a volá cílovou funkci s těmito parametry.
+    
+    Args:
+    - target_function (str): Název testované funkce.
+    - params (list): Seznam parametrů funkce.
+    - header_file (str): Cesta k hlavičkovému souboru obsahujícímu deklaraci funkce.
+    """
+    
     generated_main_path = os.path.join(os.path.dirname(header_file), "generated_main.c")
     header_filename = os.path.basename(header_file)
     set_generated_main_path(generated_main_path)
@@ -107,11 +131,20 @@ def generate_main(target_function, params, header_file):
         f.write("    return 0;\n}\n")
     
     log_debug(f"Vygenerován `generated_main.c`.")
-    
 
 def generate_main_arm(target_function, params):
-    """Vytvoří `generated_main_arm.c` přizpůsobený pro bare-metal ARM."""
+    """
+    Vytvoří `generated_main_arm.c` přizpůsobený pro bare-metal ARM.
 
+    Tento soubor je určen pro generování kódu pro bare-metal ARM aplikace.
+    Obsahuje simulovanou funkci pro výstup přes UART a generování parametrů
+    s pevnými hodnotami pro testování.
+
+    Args:
+    - target_function (str): Název testované funkce.
+    - params (list): Seznam parametrů funkce.
+    """
+    
     generate_main_file = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main_arm.c")
 
     with open(generate_main_file , "w") as f:
@@ -151,4 +184,3 @@ def generate_main_arm(target_function, params):
 
     log_debug(f"Vygenerován `generated_main_arm.c` pro ARM bare-metal.")
     return generate_main_file 
-    

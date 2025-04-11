@@ -6,9 +6,26 @@ import json
 from config import get_call_instructions_regex, get_return_instructions_regex
 from config import log_info, log_debug, log_warning, log_error
 
+"""
+Tento skript poskytuje funkce pro analýzu trace souborů, které obsahují instrukce generované během traceování vykonávaných funkcí v binárních souborech.
+Skript slouží k analýze vykonaných instrukcí, extrahování informací o voláních funkcí, počítání instrukcí pro jednotlivé řádky kódu a detekci případných havárií aplikace během traceování.
+
+Hlavní funkce skriptu:
+- Získání statických a runtime adres funkcí.
+- Mapování runtime adresy na statickou adresu a následné mapování na konkrétní řádek zdrojového kódu.
+- Počítání instrukcí v rámci sledovaných funkcí.
+- Ukládání výsledků analýzy do JSON formátu.
+"""
 
 def get_static_function_address(binary_path, function_name):
-    """Získá statickou adresu funkce z binárního souboru pomocí `nm -n`."""
+    """
+    Získá statickou adresu funkce z binárního souboru pomocí příkazu `nm -n`.
+
+    :param binary_path: Cesta k binárnímu souboru.
+    :param function_name: Název funkce, pro kterou chceme zjistit statickou adresu.
+    :return: Statická adresa funkce v hexadecimálním formátu (int), nebo None, pokud není nalezena.
+    """
+
     try:
         output = subprocess.run(["nm", "-n", binary_path], capture_output=True, text=True).stdout
         for line in output.split("\n"):
@@ -20,7 +37,14 @@ def get_static_function_address(binary_path, function_name):
     return None
 
 def get_runtime_function_address(trace_file, function_name):
-    """Najde runtime adresu funkce v logovacím souboru."""
+    """
+    Najde runtime adresu funkce v trace log souboru.
+
+    :param trace_file: Cesta k trace log souboru.
+    :param function_name: Název funkce, pro kterou hledáme runtime adresu.
+    :return: Runtime adresa funkce v hexadecimálním formátu (int), nebo None, pokud není nalezena.
+    """
+
     call_instruction_regex = get_call_instructions_regex()
     try:
         with open(trace_file, "r") as f:
@@ -37,7 +61,15 @@ def get_runtime_function_address(trace_file, function_name):
     return None
 
 def get_source_line(binary_path, addr, runtime_addr_target, static_addr_target):
-    """Přepočítá runtime adresu na statickou a mapuje ji na zdrojový kód pomocí `addr2line`."""
+    """
+    Přepočítá runtime adresu na statickou a mapuje ji na zdrojový kód pomocí příkazu `addr2line`.
+
+    :param binary_path: Cesta k binárnímu souboru.
+    :param addr: Adresa (v hexadecimálním formátu), kterou chceme přeložit.
+    :param runtime_addr_target: Runtime adresa cílové funkce.
+    :param static_addr_target: Statická adresa cílové funkce.
+    :return: Řádek zdrojového kódu odpovídající adrese, nebo None, pokud není možné najít.
+    """
     try:
         if isinstance(addr, str):
             addr = int(addr, 16)
@@ -55,7 +87,12 @@ def get_source_line(binary_path, addr, runtime_addr_target, static_addr_target):
     return None
 
 def normalize_discriminators(source_line_counts):
-    """Sjednotí instrukce na řádcích s a bez 'discriminator', odstraní redundantní varianty."""
+    """
+    Sjednotí instrukce na řádcích s a bez 'discriminator', odstraní redundantní varianty.
+
+    :param source_line_counts: Počty instrukcí pro jednotlivé řádky kódu.
+    :return: Normalizované počty instrukcí bez 'discriminator'.
+    """
     normalized_counts = collections.defaultdict(int)
 
     for line, count in source_line_counts.items():
@@ -65,7 +102,14 @@ def normalize_discriminators(source_line_counts):
     return normalized_counts
 
 def count_function_instructions(file, called_function, original_function):
-    """Počítá instrukce volané funkce až do návratu zpět do `original_function`, sleduje zanoření."""
+    """
+    Počítá instrukce volané funkce až do návratu zpět do `original_function`, sleduje zanoření funkcí.
+
+    :param file: Otevřený soubor trace logu.
+    :param called_function: Název právě volané funkce.
+    :param original_function: Název původní funkce, do které se má počítání instrukcí vrátit.
+    :return: Počet instrukcí vykonaných mezi voláním `called_function` a návratem do `original_function`.
+    """
     instruction_count = 0
     recursion_depth = 1 if called_function == original_function else 0
 
@@ -104,7 +148,16 @@ def count_function_instructions(file, called_function, original_function):
 
 
 def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file, function_name):
-    """Analyzuje logovací soubor a extrahuje instrukce pro `function_name`."""
+    """
+    Analyzuje trace log soubor a extrahuje instrukce pro funkci `function_name`.
+
+    :param file_path: Cesta k trace log souboru.
+    :param runtime_addr_target: Runtime adresa cílové funkce.
+    :param static_addr_target: Statická adresa cílové funkce.
+    :param binary_file: Cesta k binárnímu souboru.
+    :param function_name: Název analyzované funkce.
+    :return: Slovník počtů instrukcí pro jednotlivé řádky, informaci o detekované havárii a poslední vykonaný řádek.
+    """
     source_line_counts = collections.defaultdict(int)
     inside_target_function = False
     last_executed_line = None
@@ -168,7 +221,17 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
 
 
 def save_json(source_line_counts, crash_detected, crash_last_executed_line, json_output_path, function_name, params_str, source_file):
-    """Uloží výsledky analýzy do JSON souboru."""
+    """
+    Uloží výsledky analýzy do JSON souboru.
+
+    :param source_line_counts: Počty instrukcí pro jednotlivé řádky.
+    :param crash_detected: Detekována havárie programu.
+    :param crash_last_executed_line: Poslední vykonaný řádek před havárií.
+    :param json_output_path: Cesta k výstupnímu JSON souboru.
+    :param function_name: Název analyzované funkce.
+    :param params_str: Parametry testované funkce.
+    :param source_file: Cesta ke zdrojovému souboru.
+    """
     formatted_params = params_str.replace("_", " ")
 
     # Celkový počet provedených instrukcí

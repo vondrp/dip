@@ -2,9 +2,9 @@
 klee_runner.py - Spouští KLEE pro analýzu testovacích vstupů a extrahuje data pro GDB.
 
 Tento modul:
-- Spouští KLEE na LLVM bitcode souboru
-- Extrahuje vstupy z KLEE výstupů pomocí `ktest-tool`
-- Převádí KLEE výstupy do podoby vhodné pro testování v GDB
+- Spouští KLEE na LLVM bitcode souboru.
+- Extrahuje vstupy z KLEE výstupů pomocí `ktest-tool`.
+- Převádí KLEE výstupy do podoby vhodné pro testování v GDB.
 
 Použití:
     from core.klee_runner import get_klee_test_inputs
@@ -20,17 +20,28 @@ from config import log_info, log_debug, log_warning, log_error
 
 
 def run_klee(build_dir, bitcode_file):
-    """Spustí KLEE na LLVM bitcode souboru, výstupy se ukládají do 'klee-last'."""
+    """
+    Spustí KLEE na LLVM bitcode souboru a uloží výstupy do složky 'klee-last'.
+
+    Parametry:
+    build_dir (str): Cesta k adresáři pro kompilaci.
+    bitcode_file (str): Cesta k LLVM bitcode souboru, který bude analyzován.
+
+    Návratová hodnota:
+    str: Cesta k výstupní složce 'klee-last', kde jsou uloženy výsledky analýzy.
+    """
     
+    # Ověříme, zda soubor bitcode existuje
     if not os.path.exists(bitcode_file):
         log_error(f"Bitcode soubor `{bitcode_file}` nebyl nalezen. Nejprve ho vygenerujte!")
         return None
 
+    # Ověříme, zda je KLEE k dispozici v PATH
     if not shutil.which(KLEE_EXECUTABLE):
         log_error("KLEE není nainstalován nebo není v PATH.")
         return None
 
-    # Spuštění KLEE
+    # Příkaz pro spuštění KLEE
     klee_cmd = [KLEE_EXECUTABLE] + KLEE_OPTIONS + [bitcode_file]
 
     log_info(f"Spouštím KLEE: {' '.join(klee_cmd)}")
@@ -40,24 +51,37 @@ def run_klee(build_dir, bitcode_file):
         log_error(f"KLEE selhal: {e}")
         return None
 
+    # Vrátí cestu k výstupní složce 'klee-last'
     return os.path.join(build_dir, "klee-last")
 
 
 def extract_klee_inputs(klee_out_dir):
-    """Použije `ktest-tool` na výstupy KLEE a uloží je do souboru."""
+    """
+    Použije `ktest-tool` na výstupy KLEE a uloží je do souboru.
+
+    Parametry:
+    klee_out_dir (str): Cesta k výstupní složce KLEE, kde jsou uloženy soubory s testovými vstupy.
+
+    Návratová hodnota:
+    str: Cesta k souboru, kde jsou uložena zpracovaná KLEE data.
+    """
     
+    # Ověříme, zda existuje složka s výstupy KLEE
     if not os.path.exists(klee_out_dir):
         log_error("Výstupní složka KLEE neexistuje.")
         return None
 
+    # Seznam souborů .ktest
     test_files = sorted([f for f in os.listdir(klee_out_dir) if f.endswith(".ktest")])
 
     if not test_files:
         log_error("KLEE nenalezl žádné testovací vstupy.")
         return None
     
+    # Cesta pro uložení raw výstupů
     parsed_inputs_path = os.path.join(klee_out_dir, "raw_ktest_outputs.txt")
 
+    # Zpracování každého souboru s testovými vstupy
     with open(parsed_inputs_path, "w") as f:
         for test_file in test_files:
             test_path = os.path.join(klee_out_dir, test_file)
@@ -65,22 +89,34 @@ def extract_klee_inputs(klee_out_dir):
             f.write(f"=== {test_file} ===\n")
             f.write(result.stdout + "\n")
 
-    log_debug(f"Raw klee data uložena do `{parsed_inputs_path}`")
+    log_debug(f"Raw KLEE data uložena do `{parsed_inputs_path}`")
     return parsed_inputs_path
 
 
 def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
-    """Zpracuje výstup z `raw_ktest_outputs.txt` a extrahuje parametry pro GDB."""
+    """
+    Zpracuje výstup z `raw_ktest_outputs.txt` a extrahuje parametry pro GDB.
 
+    Parametry:
+    raw_ktest_path (str): Cesta k souboru s raw výstupy KLEE.
+    param_types (list): Seznam typů parametrů pro testovací případy.
+    output_file (str): Cesta k souboru, do kterého budou uloženy extrahované parametry pro GDB.
+
+    Návratová hodnota:
+    tuple: Cesta k výstupnímu souboru a seznam zpracovaných testovacích případů.
+    """
+    
+    # Ověření, zda soubor s raw daty existuje
     if not os.path.exists(raw_ktest_path):
-        log_error(f"Soubor raw klee dat:`{raw_ktest_path}` neexistuje.")
+        log_error(f"Soubor raw KLEE dat `{raw_ktest_path}` neexistuje.")
         return None, []
 
-    #gdb_inputs_path = os.path.join(klee_out_dir, "gdb_test_inputs.txt")
+    # Příprava seznamu testovacích případů
     test_cases = []
     current_case = {}
 
     log_debug(f"Klee má na vstupu datové typy: {param_types}")
+    
     with open(raw_ktest_path, "r") as f:
         for line in f:
             param_match = re.match(r"object \d+: name: 'param_(\d+)'", line)
@@ -89,11 +125,13 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
                 current_case[param_index] = None
                 continue
 
+            # Zpracování hodnoty typu int
             int_match = re.match(r"object \d+: int : (-?\d+)", line)
             if int_match and param_index in current_case:
                 current_case[param_index] = int(int_match.group(1))
                 continue
 
+            # Zpracování hodnoty v hexadecimálním formátu
             hex_match = re.match(r"object \d+: hex : (0x[0-9a-fA-F]+)", line)
             if hex_match and param_index in current_case:
                 hex_val = int(hex_match.group(1), 16)
@@ -107,31 +145,48 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
                     current_case[param_index] = hex_val
                 continue
 
+            # Zpracování hodnoty typu char
             text_match = re.match(r"object \d+: text: (.)", line)
             if text_match and param_types[param_index] == "char":
                 current_case[param_index] = text_match.group(1)
                 continue
 
+            # Pokud jsme našli nový testovací případ, přidáme předchozí
             if line.startswith("==="):
                 if current_case:
                     sorted_case = " ".join(str(current_case[i]) for i in sorted(current_case) if current_case[i] is not None)
                     test_cases.append(sorted_case)
                 current_case = {}
 
+    # Pokud ještě existuje nějaký neuzavřený testovací případ, přidáme ho
     if current_case:
         sorted_case = " ".join(str(current_case[i]) for i in sorted(current_case) if current_case[i] is not None)
         test_cases.append(sorted_case)
 
+    # Uložení výsledků do výstupního souboru
     with open(output_file, "w") as f:
         for case in test_cases:
             f.write(case + "\n")
 
-    log_info(f"Parametry nalezené s klee uloženy do: `{output_file}`")
+    log_info(f"Parametry nalezené s KLEE uloženy do: `{output_file}`")
     return output_file, test_cases
 
 
 def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file, target_arch="native"):
-    """Spustí celý proces a vrátí cestu k testovacím vstupům i samotná data."""
+    """
+    Spustí celý proces analýzy a vrátí cestu k testovacím vstupům i samotná data.
+
+    Parametry:
+    build_dir (str): Cesta k adresáři pro kompilaci.
+    bitcode_file (str): Cesta k LLVM bitcode souboru.
+    param_types (list): Seznam datových typů parametrů.
+    output_file (str): Cesta k výstupnímu souboru pro testovací vstupy.
+    target_arch (str): Architektura cílového systému ("native" nebo "arm").
+
+    Návratová hodnota:
+    tuple: Cesta k výstupnímu souboru a seznam testovacích případů.
+    """
+    
     if target_arch == "arm":
         klee_out_dir = run_klee_with_qemu(build_dir, bitcode_file)
     else:
@@ -147,15 +202,24 @@ def get_klee_test_inputs(build_dir, bitcode_file, param_types, output_file, targ
     return extract_gdb_inputs(raw_file, param_types, output_file)
 
 
-
 def run_klee_with_qemu(build_dir, bitcode_file, qemu_executable="qemu-arm"):
-    """Spustí KLEE na LLVM bitcode souboru v emulovaném ARM prostředí pomocí QEMU."""
+    """
+    Spustí KLEE na LLVM bitcode souboru v emulovaném ARM prostředí pomocí QEMU.
+
+    Parametry:
+    build_dir (str): Cesta k adresáři pro kompilaci.
+    bitcode_file (str): Cesta k LLVM bitcode souboru.
+    qemu_executable (str): Cesta k QEMU executable pro ARM (výchozí je "qemu-arm").
+
+    Návratová hodnota:
+    str: Cesta k výstupní složce 'klee-last'.
+    """
     
     # Ověření dostupnosti QEMU pro ARM
     if not shutil.which(qemu_executable):
         raise FileNotFoundError(f"[ERROR] `{qemu_executable}` nebyl nalezen. Zkontrolujte instalaci.")
 
-    # Ověření, že KLEE je dostupné
+    # Ověření dostupnosti KLEE
     if not shutil.which(KLEE_EXECUTABLE):
         raise FileNotFoundError(f"[ERROR] `{KLEE_EXECUTABLE}` není nainstalováno nebo není v PATH.")
 
