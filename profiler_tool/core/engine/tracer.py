@@ -34,7 +34,9 @@ def run_gdb_trace(binary_file, trace_file, args):
         "-ex", "quit",
         "--args", binary_file, *args
     ]
+
     log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
+    
     subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
 

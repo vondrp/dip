@@ -20,9 +20,10 @@ def find_dependencies(source_file):
     dependencies = set()
     with open(source_file, "r") as f:
         for line in f:
-            match = re.match(r'#include\s+"(.+?)"', line)
+            match = re.match(r'\s*#include\s*[<"](.+?)[">]', line)
             if match:
                 dependencies.add(match.group(1))  # Uložíme název hlavičkového souboru
+    log_debug(f"Závislosti pro {source_file}: {dependencies}")       
     return dependencies
 
 def map_headers_to_sources(src_dir):
@@ -42,6 +43,7 @@ def map_headers_to_sources(src_dir):
         header_file = f"{base_name}.h"
         header_to_source[header_file] = src_file  # Mapujeme `.h` → `.c`
 
+    log_debug(f"Header to source: {header_to_source}")
     return header_to_source
 
 def compile_klee(klee_dir, src_file, src_dir, target_arch="native"):
@@ -123,6 +125,8 @@ def compile_x86(binary_file, src_file, src_dir):
     needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
+    log_debug(f"Needed sources: {needed_sources}")
+
     compile_cmd = ["gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
     log_debug(f"Kompiluji: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
@@ -141,6 +145,8 @@ def compile_arm_linux(binary_file, src_file, src_dir):
     # Najdeme odpovídající `.c` soubory
     needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
+
+    log_debug(f"Needed sources: {needed_sources}")
 
     compile_cmd = ["arm-linux-gnueabihf-gcc", "-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
     log_debug(f"Kompiluji: {' '.join(compile_cmd)}")

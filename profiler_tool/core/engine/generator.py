@@ -121,8 +121,12 @@ def generate_main(target_function, params, header_file):
                 converted_params.append(f"atoi(argv[{i + 1}])")
             elif "float" in param_type or "double" in param_type:
                 converted_params.append(f"atof(argv[{i + 1}])")
-            elif "char" in param_type:
-                converted_params.append(f"argv[{i + 1}][0]")  # Použijeme první znak řetězce
+            elif "char" in param_type and len(param.split()) == 1:  # Zpracování pro char
+                # Pro char použijeme první znak řetězce
+                converted_params.append(f"argv[{i + 1}][0]")
+            elif "char" in param_type:  # Zpracování pro char*
+                # Pro char* použijeme celý řetězec (argv[i+1])
+                converted_params.append(f"argv[{i + 1}]")    
             else:
                 converted_params.append(f"argv[{i + 1}]")
 

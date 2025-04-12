@@ -220,7 +220,7 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
     return source_line_counts, crash_detected, last_executed_line
 
 
-def save_json(source_line_counts, crash_detected, crash_last_executed_line, json_output_path, function_name, params_str, source_file):
+def save_json(source_line_counts, crash_detected, crash_last_executed_line, json_output_path, function_name, params, source_file):
     """
     Uloží výsledky analýzy do JSON souboru.
 
@@ -229,10 +229,9 @@ def save_json(source_line_counts, crash_detected, crash_last_executed_line, json
     :param crash_last_executed_line: Poslední vykonaný řádek před havárií.
     :param json_output_path: Cesta k výstupnímu JSON souboru.
     :param function_name: Název analyzované funkce.
-    :param params_str: Parametry testované funkce.
+    :param params: Parametry testované funkce.
     :param source_file: Cesta ke zdrojovému souboru.
     """
-    formatted_params = params_str.replace("_", " ")
 
     # Celkový počet provedených instrukcí
     total_instructions = sum(source_line_counts.values())
@@ -240,7 +239,7 @@ def save_json(source_line_counts, crash_detected, crash_last_executed_line, json
     json_data = {
         "source_file": source_file,
         "function": function_name,
-        "params": formatted_params,
+        "params": params,
         "total_instructions": total_instructions,
         "instructions": source_line_counts
     }
@@ -291,6 +290,7 @@ def analyze_traces_in_folder(trace_folder, output_folder, binary_file, function_
         params_str = match.group(1)
         json_output_path = os.path.join(output_folder, f"instructions_{function_name}_{params_str}.json")
 
+        params_str = params_str.replace("_", " ")
         log_info(f"Analyzuji `{trace_file}` (parametry: {params_str})")
 
         runtime_addr_target = get_runtime_function_address(trace_path, function_name)
@@ -308,7 +308,7 @@ def analyze_traces_in_folder(trace_folder, output_folder, binary_file, function_
 
 
 
-def analyze_trace(trace_file, binary_file, target_function, output_json):
+def analyze_trace(trace_file, binary_file, target_function, output_json, params):
     """
     Analyzuje jeden konkrétní trace soubor a uloží výsledky do JSON souboru.
     
@@ -316,6 +316,7 @@ def analyze_trace(trace_file, binary_file, target_function, output_json):
     :param binary_file: Cesta k binárnímu souboru.
     :param target_function: Název analyzované funkce.
     :param output_json: Cesta k výstupnímu JSON souboru.
+    :param params: Parametry s nimiž byl trace_file vytvořen
     """
     static_addr_target = get_static_function_address(binary_file, target_function)
     if static_addr_target is None:
@@ -333,11 +334,10 @@ def analyze_trace(trace_file, binary_file, target_function, output_json):
 
     # Extrahování parametrů z názvu souboru (trace_<function_name>_<params>.log)
     match = re.match(rf"trace_{re.escape(target_function)}_(.*)\.log", os.path.basename(trace_file))
-    params_str = match.group(1) if match else "unknown"
 
     # Získání source_file z prvního záznamu v source_line_counts
     first_line_key = next(iter(source_line_counts))
     source_file = first_line_key.split(":")[0]
 
-    save_json(source_line_counts, crash_detected, last_executed_line, output_json, target_function, params_str, source_file)
+    save_json(source_line_counts, crash_detected, last_executed_line, output_json, target_function, params, source_file)
     log_info(f"Analýza `{trace_file}` dokončena a výsledky uloženy do `{output_json}`.")    

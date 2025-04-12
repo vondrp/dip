@@ -1,5 +1,6 @@
 import os
 import re
+import shlex
 from core.cli.file_selection import fzf_select_file
 from core.engine.tracer import run_gdb_trace, run_gdb_trace_arm_linux
 from core.engine.trace_analysis import analyze_trace
@@ -35,7 +36,8 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
 
         with open(param_file, "r") as f:
             for line in f:
-                params = line.strip().split()
+                # Zpracování parametrů s mezerami
+                params = shlex.split(line.strip())  # Používá shlex pro správné zpracování mezer
                 param_sets.append(params)
         
         log_info(f"Načteno {len(param_sets)} sad parametrů ze souboru `{param_file}`.")
@@ -50,7 +52,9 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
             param_input = input("[INPUT] Parametry: ").strip()
             if param_input == "" and len(param_sets) > 0:
                 break  # Konec zadávání po druhém Enteru
-            param_sets.append(param_input.split())
+
+            # Použití shlex.split pro správné zpracování parametrů s mezerami
+            param_sets.append(shlex.split(param_input))    
 
     if not param_sets:
         param_sets.append([])  # Prázdná sada, pokud uživatel nic nezadá
@@ -59,19 +63,28 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
     output_json = ""
     # Spuštění trace a analýzy pro každou sadu parametrů
     for params in param_sets:
-        param_str = "_".join(params) if params else "no_params"
+        if params:
+            # Nahraď mezery v jednotlivých parametrech a odstraň nebezpečné znaky
+            safe_params = [re.sub(r'\W+', '_', p) for p in params]
+            param_str = "_".join(safe_params)
+
+            quoted_params = [f"'{p}'" if ' ' in p else p for p in params]
+            quoted_params_str = " ".join(quoted_params)
+        else:
+            quoted_params = []
+            param_str = "no_params"
+            quoted_params_str = ""
 
         if architecture == "arm":
             trace_file = os.path.join(TRACE_DIR, f"traceArm_{func_name}_{param_str}.log")
-            log_info(f"\n Spouštím trace pro {binary_file} s parametry {params}")
-            run_gdb_trace_arm_linux(binary_file, trace_file, params)
+            log_info(f"\n Spouštím trace pro {binary_file} s parametry {quoted_params}")
+            run_gdb_trace_arm_linux(binary_file, trace_file, quoted_params)
             json_filename = f"instructionsArm_{func_name}_{param_str}.json"
         else:    
             trace_file = os.path.join(TRACE_DIR, f"trace_{func_name}_{param_str}.log")
-            log_info(f"\n Spouštím trace pro {binary_file} s parametry {params}")
-            run_gdb_trace(binary_file, trace_file, params)
+            log_info(f"\n Spouštím trace pro {binary_file} s parametry {quoted_params}")
+            run_gdb_trace(binary_file, trace_file, quoted_params)
             json_filename = f"instructions_{func_name}_{param_str}.json"
-
 
         log_info(f"Trace dokončen! Výstup: {trace_file}")
 
@@ -82,6 +95,6 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
         output_json = os.path.join(output_json_dir, json_filename)
 
         log_info(f"\n Probíhá analýza pro trace soubor: {trace_file}")
-        analyze_trace(trace_file, binary_file, func_name, output_json)
+        analyze_trace(trace_file, binary_file, func_name, output_json, quoted_params_str)
         log_info(f"Analýza dokončena! Výstupní soubor: {output_json}")
     return output_json
