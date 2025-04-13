@@ -105,7 +105,7 @@ def generate_main(target_function, params, header_file):
     set_generated_main_path(generated_main_path)
 
     with open(generated_main_path, "w") as f:
-        f.write('#include <stdio.h>\n#include <stdlib.h>\n')
+        f.write('#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n')
         f.write('#define MAIN_DEFINED\n')
         f.write(f'#include "{header_filename}"\n\n')
 
@@ -116,19 +116,56 @@ def generate_main(target_function, params, header_file):
 
         converted_params = []
         for i, param in enumerate(params):
-            param_type = param.split()[0]
-            if "int" in param_type:
-                converted_params.append(f"atoi(argv[{i + 1}])")
-            elif "float" in param_type or "double" in param_type:
-                converted_params.append(f"atof(argv[{i + 1}])")
-            elif "char" in param_type and len(param.split()) == 1:  # Zpracování pro char
-                # Pro char použijeme první znak řetězce
-                converted_params.append(f"argv[{i + 1}][0]")
-            elif "char" in param_type:  # Zpracování pro char*
-                # Pro char* použijeme celý řetězec (argv[i+1])
-                converted_params.append(f"argv[{i + 1}]")    
-            else:
-                converted_params.append(f"argv[{i + 1}]")
+            param_type = param.split()[0]  # Typ parametru
+            param_name = param.split()[1] if len(param.split()) > 1 else None  # Název parametru
+
+            param_name_clean = param_name[1:]  # Název parametru bez prvního znaku (ukazetele *)
+
+            # Zpracování pro ukazatel
+            if "*" in param_name:  # Pokud jde o ukazatel (např. int* array)
+
+                if any(t in param_type for t in ("int", "float", "double")):
+                    f.write(f'    // Zpracování pole z jednoho argumentu\n')
+                    f.write(f'    int count_{i + 1} = 1;\n')
+                    f.write(f'    char *tmp_{i + 1} = argv[{i + 1}];\n')
+                    f.write(f'    for (int i = 0; tmp_{i + 1}[i]; ++i) {{\n')
+                    f.write(f'        if (tmp_{i + 1}[i] == \' \') count_{i + 1}++;\n')
+                    f.write(f'    }}\n')
+                    f.write(f'    {param_type} {param_name_clean}[count_{i + 1}];\n')
+                    f.write(f'    int i_{i + 1} = 0;\n')
+                    f.write(f'    char *token_{i + 1} = strtok(argv[{i + 1}], " ");\n')
+                    f.write(f'    while (token_{i + 1} != NULL && i_{i + 1} < count_{i + 1}) {{\n')
+                    if "int" in param_type:
+                        f.write(f'          {param_name_clean}[i_{i + 1}++] = atoi(token_{i + 1}); \n')
+                    else:
+                        f.write(f'          {param_name_clean}[i_{i + 1}++] = atof(token_{i + 1}); \n')
+                    f.write(f'          token_{i + 1} = strtok(NULL, " "); \n')
+                    f.write(f'    }}\n')
+                    converted_params.append(param_name_clean)
+                elif "char" in param_type:  # Zpracování pro char*
+                    # Pro char* použijeme celý řetězec (argv[i+1])
+                    converted_params.append(f"argv[{i + 1}]")
+                else:
+                    f.write(f'    {param_type} {param_name}[argc - 1];\n')
+                    f.write(f'    for (int i = 0; i < argc - 1; ++i) {{\n')
+                    f.write(f'        {param_name}[i] = argv[i + 1];\n')  # Pro ostatní typy
+                    f.write(f'    }}\n')
+                    converted_params.append(param_name)
+
+            # Zpracování pro ostatní hodnoty (ne ukazatel)
+            else:  # Neukazatel, pouze hodnoty
+                if "int" in param_type:
+                    converted_params.append(f"atoi(argv[{i + 1}])")
+                elif "float" in param_type:
+                    converted_params.append(f"atof(argv[{i + 1}])")
+                elif "char" in param_type:
+                    converted_params.append(f"argv[{i + 1}]")
+                elif "unsigned" in param_type:
+                    converted_params.append(f"strtoul(argv[{i + 1}], NULL, 10)")    
+                elif "void" in param_type:
+                    f.write(f'    // Parametr typu void není podporován.\n')
+                else:
+                    converted_params.append(f"argv[{i + 1}]")
 
         f.write(f'    printf("Spouštím test funkce: {target_function}\\n");\n')
         f.write(f"    {target_function}({', '.join(converted_params)});\n")

@@ -29,6 +29,8 @@ def run_gdb_trace(binary_file, trace_file, args):
     """
     gdb_cmd = [
         "gdb", "-q", "-ex", f"source {GDB_SCRIPT}",
+        "-ex", "set logging file gdb_log.txt",
+        "-ex", "set logging on",
         "-ex", "starti",
         "-ex", f"trace-asm {trace_file}",
         "-ex", "quit",
