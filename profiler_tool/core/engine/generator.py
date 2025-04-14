@@ -104,18 +104,28 @@ def generate_main(target_function, params, header_file):
     header_filename = os.path.basename(header_file)
     set_generated_main_path(generated_main_path)
 
+    # získej seznam parametrů
+    params = [p.strip() for p in params if p.strip()]
+    has_void = len(params) == 1 and params[0] == "void"
+
+
     with open(generated_main_path, "w") as f:
         f.write('#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n')
         f.write('#define MAIN_DEFINED\n')
         f.write(f'#include "{header_filename}"\n\n')
 
         f.write("int main(int argc, char *argv[]) {\n")
-        f.write("    if (argc < %d) {\n" % (len(params) + 1))
-        f.write(f'        printf("Použití: %s {" ".join(["<param>" for _ in params])}\\n", argv[0]);\n')
-        f.write("        return 1;\n    }\n")
+
+        if not has_void:
+            f.write("    if (argc < %d) {\n" % (len(params) + 1))
+            f.write(f'        printf("Použití: %s {" ".join(["<param>" for _ in params])}\\n", argv[0]);\n')
+            f.write("        return 1;\n    }\n")
 
         converted_params = []
         for i, param in enumerate(params):
+            if param.strip() == "void":
+                continue
+
             param_type = param.split()[0]  # Typ parametru
             param_name = param.split()[1] if len(param.split()) > 1 else None  # Název parametru
 
