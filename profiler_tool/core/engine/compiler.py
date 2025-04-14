@@ -22,7 +22,10 @@ def find_dependencies(source_file):
         for line in f:
             match = re.match(r'\s*#include\s*[<"](.+?)[">]', line)
             if match:
-                dependencies.add(match.group(1))  # Uložíme název hlavičkového souboru
+                header_path = match.group(1)
+                dependencies.add(os.path.basename(header_path))
+                #dependencies.add(match.group(1))  # Uložíme název hlavičkového souboru
+
     log_debug(f"Závislosti pro {source_file}: {dependencies}")       
     return dependencies
 
@@ -123,6 +126,7 @@ def compile_x86(binary_file, src_file, src_dir):
 
     # Najdeme odpovídající `.c` soubory
     needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
+    
     needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
 
     log_debug(f"Needed sources: {needed_sources}")

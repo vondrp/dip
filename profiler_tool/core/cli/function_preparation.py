@@ -90,12 +90,12 @@ def select_source_file(directory, src_file=None):
     """Vybere odpovídající .c soubor."""
     if not src_file:
         log_info("\n Vyber odpovídající .c soubor:")
-        src_file = fzf_select_file(".c", directory)
+        src_file = fzf_select_file(".c")
     
     while not src_file or not os.path.exists(src_file):
         log_error("Chyba: Nevybral jsi platný .c soubor.")
         log_info("\n Vyber znovu odpovídající .c soubor:")
-        src_file = fzf_select_file(".c", directory)
+        src_file = fzf_select_file(".c")
     
     return src_file
 
@@ -140,11 +140,12 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
         binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
         compile_arm_linux(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
     else:
+        log_debug(f"src file = {src_file}   src dir = {src_dir}")
         binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
         compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
 
     log_info(f"Kompilace dokončena pro `{target_function}`.")
-    delete_file(get_generated_main_path())
+    #delete_file(get_generated_main_path())
     if use_klee:
         prepare_klee(header_file, src_file, target_function)
 
