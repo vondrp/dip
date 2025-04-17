@@ -1,5 +1,101 @@
 # dip
 
+
+# Použití CLI nástroje
+
+Tento nástroj umožňuje analyzovat části C kódu pomocí emulace (`trace-analysis`) a konkolického testování (`KLEE`). Obsahuje příkazy pro výběr funkcí, generování binárek, spuštění běhů a porovnání výstupů.
+
+## Spuštění
+
+CLI nástroj se spouští následujícím způsobem:
+
+```
+python3 -m core.cli.main <příkaz> [parametry]
+```
+
+
+# CLI Nástroje pro Analýzu Kódu
+
+Tento nástroj umožňuje přípravu funkcí, konkolické testování pomocí KLEE, analýzu běhů a porovnání výsledků.
+
+## Přehled dostupných příkazů
+
+---
+
+### `prepare-function`
+
+Vybere a přeloží zadanou funkci ze zdrojových souborů. Volitelně umožňuje konkolické testování pomocí KLEE.
+
+#### Použití:
+```
+python3 -m core.cli.main prepare-function -H headers.h -c source.c -f func_name [--klee]
+```
+
+# Parametry:
+
+-H, --header – Hlavičkový soubor (.h) – Nepovinný
+-c, --source – Zdrojový soubor (.c) – Nepovinný
+-f, --function – Název cílové funkce – Nepovinný
+--klee – Aktivuje KLEE testování – Nepovinný
+
+
+### trace-analysis
+
+Spustí předkompilovanou binárku se vstupy a analyzuje trace.log.
+
+
+# Parametr	Popis	Povinný
+-b, --binary - Cesta k binárnímu soubory
+-f, --file	- Soubor se vstupy (jeden vstup na řádek)
+
+
+
+### compare-runs
+
+Porovná více běhů na základě výsledných JSON výstupů.
+
+```
+python3 -m core.cli.main compare-runs -d slozka_s_jsony [-f file1 file2 ...]
+```
+
+# Parametry:
+-d, --directory – Složka s JSON soubory – Povinný
+-f, --files – Konkrétní soubory k porovnání – Nepovinný
+
+
+
+### prepare-klee
+
+Spustí pouze KLEE testování na konkrétní funkci bez trace analýzy.
+
+# Použití:
+```
+python3 -m core.cli.main prepare-klee -H headers.h -c source.c -f func_name
+```
+
+# Parametry:
+-H, --header – Hlavičkový soubor (.h) – Nepovinný
+-c, --source – Zdrojový soubor (.c) – Nepovinný
+-f, --function – Název funkce – Nepovinný
+
+
+### func-analyze
+Kombinuje: výběr funkce → přeložení → spuštění → výstup ve formátu JSON.
+
+# Použití:
+```
+python3 -m core.cli.main func-analyze -H headers.h -c source.c -f func_name [--result-file output.json]4
+```
+
+# Parametry:
+-H, --header – Hlavičkový soubor (.h) – Nepovinný
+-c, --source – Zdrojový soubor (.c) – Nepovinný
+-f, --function – Název funkce – Nepovinný
+--result-file – Výstupní soubor s JSON výsledkem – Nepovinný
+
+######  Instalace závislostí 
+
+
 # Návod pro instalaci Klee
 
 Tento návod popisuje postup instalace nástroje **Klee** pro konkolické testování C kódu a knihoven. Klee využívá **STP solver**, knihovnu **uClibc** pro testování C knihoven a **GoogleTest** pro unit testy. Návod byl úspěšně proveden na systému WSL s distribucí Ubuntu 22.04.
