@@ -34,7 +34,12 @@ def set_generated_main_klee_path(new_path):
     global _generated_main_klee_path
     _generated_main_klee_path = new_path
 
-def generate_main_klee(target_function, params, header_file):
+
+def generate_main_klee(target_function, params_with_const, header_file):
+    """
+    Vytvoří `generated_main_klee.c` pro analýzu s KLEE – s podporou pro pole, řetězce a konstanty.
+    Parametry mohou být ve formátu "typ jméno" nebo "typ jméno=hodnota" pro konstanty.
+    """
     """
     Vytvoří `generated_main_klee.c` pro analýzu s KLEE.
 
@@ -43,49 +48,90 @@ def generate_main_klee(target_function, params, header_file):
     
     Args:
     - target_function (str): Název testované funkce.
-    - params (list): Seznam parametrů funkce.
+    - params_with_const (list): Seznam parametrů funkce. Některé z nich mají zadanou hodnotu
     - header_file (str): Cesta k hlavičkovému souboru obsahujícímu deklaraci funkce.
     """
-    
+    import os
+
     generated_main_klee_path = os.path.join(os.path.dirname(header_file), "generated_main_klee.c")
     set_generated_main_klee_path(generated_main_klee_path)
 
     header_filename = os.path.basename(header_file)
+    params_with_const = [p.strip() for p in params_with_const if p.strip()]
+    has_void = len(params_with_const) == 1 and params_with_const[0] == "void"
 
     with open(generated_main_klee_path, "w") as f:
         f.write('#include <klee/klee.h>\n')
-        f.write('#include <stdio.h>\n\n')
+        f.write('#include <stdio.h>\n')
+        f.write('#include <string.h>\n\n')
         f.write(f'#include "{header_filename}"\n\n')
-
+        f.write('// Velikost symbolických polí/řetězců\n')
+        f.write('#define SIZE 10\n\n')
         f.write("int main() {\n")
 
+        if has_void:
+            f.write(f'    printf("Spouštím test funkce: {target_function}\\n");\n')
+            f.write(f'    {target_function}();\n')
+            f.write("    return 0;\n}\n")
+            return
+
         symbolic_params = []
-        for i, param in enumerate(params):
-            param_type = param.split()[0]  # Získáme typ parametru
-            var_name = f"param_{i}"
 
-            if "int" in param_type:
-                f.write(f"    int {var_name};\n")
-                f.write(f"    klee_make_symbolic(&{var_name}, sizeof({var_name}), \"{var_name}\");\n")
-            elif "float" in param_type or "double" in param_type:
-                f.write(f"    {param_type} {var_name};\n")
-                f.write(f"    klee_make_symbolic(&{var_name}, sizeof({var_name}), \"{var_name}\");\n")
-            elif "char" in param_type and "*" in param:  # Řetězec (`char *`)
-                f.write(f"    char {var_name}[10];\n")  # Zajišťujeme pevnou velikost řetězce
-                f.write(f"    klee_make_symbolic({var_name}, sizeof({var_name}), \"{var_name}\");\n")
-            elif "char" in param_type:
-                f.write(f"    char {var_name};\n")
-                f.write(f"    klee_make_symbolic(&{var_name}, sizeof({var_name}), \"{var_name}\");\n")
+        for i, param in enumerate(params_with_const):
+            if "=" in param:
+                decl_part, const_val = param.split("=", 1)
+                decl_parts = decl_part.strip().split()
+                param_type = " ".join(decl_parts[:-1])
+                param_name_raw = decl_parts[-1] 
+
+                var_name = f"param_{i}"
+                const_val = const_val.strip().strip('"').strip("'")
+
+                is_pointer = "*" in param_type or param_name_raw.strip().startswith("*")
+                clean_type = param_type.replace("*", "").strip()
+
+                log_debug(f"is_pointer: {is_pointer} clean_type: {clean_type}  raw: {param_name_raw}")
+                if is_pointer and clean_type == "char":
+                    # char * = "něco"
+                    f.write(f'    {param_type} *{var_name} = "{const_val}";\n')
+                    symbolic_params.append(var_name)
+                elif is_pointer:
+                    # Ukazatel na jiný typ – zatím nepodporováno
+                    log_warn(f"Přeskakuji konstantu pro nepodporovaný ukazatelový typ: {param_type}")
+                    continue
+                else:
+                    # Např. int x = 5;
+                    f.write(f'    {param_type} {var_name} = {const_val};\n')
+                    symbolic_params.append(var_name)
             else:
-                f.write(f"    {param_type} {var_name};\n")  # Ostatní typy (např. structy)
+                # Symbolický parametr
+                parts = param.strip().split()
+                param_type = " ".join(parts[:-1])
+                is_pointer = "*" in param_type or "*" in parts[-1]
+                clean_type = param_type.replace("*", "").strip()
+                var_name = f"param_{i}"
 
-            symbolic_params.append(var_name)
+                if clean_type == "char" and is_pointer:
+                    f.write(f"    char {var_name}[SIZE];\n")
+                    f.write(f"    klee_make_symbolic({var_name}, sizeof({var_name}), \"{var_name}\");\n")
+                elif is_pointer and clean_type in ["int", "float", "double"]:
+                    f.write(f"    {clean_type} {var_name}[SIZE];\n")
+                    f.write(f"    klee_make_symbolic({var_name}, sizeof({var_name}), \"{var_name}\");\n")
+                elif clean_type in ["int", "float", "double", "char", "unsigned"]:
+                    f.write(f"    {clean_type} {var_name};\n")
+                    f.write(f"    klee_make_symbolic(&{var_name}, sizeof({var_name}), \"{var_name}\");\n")
+                else:
+                    f.write(f"    {clean_type} {var_name};\n")
+                    f.write(f"    klee_make_symbolic(&{var_name}, sizeof({var_name}), \"{var_name}\");\n")
+
+                symbolic_params.append(var_name)
 
         f.write(f'\n    printf("Spouštím test funkce: {target_function}\\n");\n')
         f.write(f"    {target_function}({', '.join(symbolic_params)});\n")
-
         f.write("    return 0;\n}\n")
-    log_debug(f"Vygenerován `generated_main_klee.c`.")
+
+    log_debug("Vygenerován `generated_main_klee.c` se správnou podporou pro pole, řetězce i konstanty.")
+
 
 def generate_main(target_function, params, header_file):
     """
@@ -103,7 +149,7 @@ def generate_main(target_function, params, header_file):
     generated_main_path = os.path.join(os.path.dirname(header_file), "generated_main.c")
     header_filename = os.path.basename(header_file)
     set_generated_main_path(generated_main_path)
-
+    
     # získej seznam parametrů
     params = [p.strip() for p in params if p.strip()]
     has_void = len(params) == 1 and params[0] == "void"

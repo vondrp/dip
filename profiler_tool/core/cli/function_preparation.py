@@ -169,8 +169,29 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
     while not check_function_in_file(src_file, target_function):
         src_file = select_source_file(directory, src_file)
 
+    params = functions[target_function]
+    constant_params = []
+
+    print("\n Tato funkce má následující parametry:")
+    for i, p in enumerate(params):
+        print(f"  [{i}] {p}")
+    print("\nChcete některé parametry zadat jako *konstanty* (namísto symbolických)?")
+    print("Zadáním konstanty lze zjednodušit analýzu a předejít problémům při zpracování vstupů (např. u řetězců nebo struktur).")
+
+    for i, param in enumerate(params):
+        user_input = input(f"Zadejte hodnotu pro parametr '{param}' (ENTER ponechá jako symbolický): ")
+        if user_input.strip():
+            param_name = param.split()[-1]
+            const_value = user_input.strip()
+            # Uložíme ve formátu: "typ jméno=hodnota"
+            constant_params.append(f"{param}={const_value}")
+        else:
+            constant_params.append(param)
+
+    log_debug(constant_params)
+    
     # Generování `generated_main_klee.c` pro KLEE
-    generate_main_klee(target_function, functions[target_function], header_file)
+    generate_main_klee(target_function, constant_params, header_file)
     log_info(f"\n Generování `generated_main_klee.c` dokončeno pro funkci `{target_function}` ze souboru `{header_file}`.")
 
     # Kompilace pro KLEE (bitcode)
