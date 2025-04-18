@@ -33,10 +33,10 @@ python3 -m core.cli.main prepare-function -H headers.h -c source.c -f func_name 
 
 # Parametry:
 
--H, --header – Hlavičkový soubor (.h) – Nepovinný
--c, --source – Zdrojový soubor (.c) – Nepovinný
--f, --function – Název cílové funkce – Nepovinný
---klee – Aktivuje KLEE testování – Nepovinný
+-H, --header – Hlavičkový soubor (.h)
+-c, --source – Zdrojový soubor (.c)
+-f, --function – Název cílové funkce
+--klee – Aktivuje KLEE testování
 
 
 ### trace-analysis
@@ -59,8 +59,8 @@ python3 -m core.cli.main compare-runs -d slozka_s_jsony [-f file1 file2 ...]
 ```
 
 # Parametry:
--d, --directory – Složka s JSON soubory – Povinný
--f, --files – Konkrétní soubory k porovnání – Nepovinný
+-d, --directory – Složka s JSON soubory
+-f, --files – Konkrétní soubory k porovnání
 
 
 
@@ -74,9 +74,9 @@ python3 -m core.cli.main prepare-klee -H headers.h -c source.c -f func_name
 ```
 
 # Parametry:
--H, --header – Hlavičkový soubor (.h) – Nepovinný
--c, --source – Zdrojový soubor (.c) – Nepovinný
--f, --function – Název funkce – Nepovinný
+-H, --header – Hlavičkový soubor (.h)
+-c, --source – Zdrojový soubor (.c)
+-f, --function – Název funkce
 
 
 ### func-analyze
@@ -88,10 +88,10 @@ python3 -m core.cli.main func-analyze -H headers.h -c source.c -f func_name [--r
 ```
 
 # Parametry:
--H, --header – Hlavičkový soubor (.h) – Nepovinný
--c, --source – Zdrojový soubor (.c) – Nepovinný
--f, --function – Název funkce – Nepovinný
---result-file – Výstupní soubor s JSON výsledkem – Nepovinný
+-H, --header – Hlavičkový soubor (.h)
+-c, --source – Zdrojový soubor (.c)
+-f, --function – Název funkce
+--result-file – Výstupní soubor s JSON výsledkem
 
 ######  Instalace závislostí 
 
