@@ -134,6 +134,46 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
             # Zpracování hodnoty v hexadecimálním formátu
             hex_match = re.match(r"object \d+: hex : (0x[0-9a-fA-F]+)", line)
             if hex_match and param_index in current_case:
+                hex_str = hex_match.group(1)[2:]  # odstraň '0x'
+
+
+                # Zajistíme délku pro násobky 8 (kvůli double), 4 (kvůli float/int)
+                if len(hex_str) % 2 != 0:
+                    hex_str = "0" + hex_str  # zarovnání do sudého počtu znaků
+                bytes_data = bytes.fromhex(hex_str)
+
+                param_type = param_types[param_index]
+
+                try:
+                    if param_type == "int*":
+                        ints = list(struct.unpack(f"<{len(bytes_data)//4}i", bytes_data))
+                        current_case[param_index] = ints
+
+                    elif param_type == "float*":
+                        floats = list(struct.unpack(f"<{len(bytes_data)//4}f", bytes_data))
+                        current_case[param_index] = floats
+
+                    elif param_type == "double*":
+                        doubles = list(struct.unpack(f"<{len(bytes_data)//8}d", bytes_data))
+                        current_case[param_index] = doubles
+
+                    elif param_type == "float":
+                        current_case[param_index] = struct.unpack("<f", bytes_data[:4])[0]
+
+                    elif param_type == "double":
+                        current_case[param_index] = struct.unpack("<d", bytes_data[:8])[0]
+
+                    else:
+                        # fallback – uložíme jako integer
+                        current_case[param_index] = int(hex_match.group(1), 16)
+
+                except struct.error:
+                    current_case[param_index] = []
+                continue
+
+            """
+            hex_match = re.match(r"object \d+: hex : (0x[0-9a-fA-F]+)", line)
+            if hex_match and param_index in current_case:
                 hex_val = int(hex_match.group(1), 16)
                 if param_types[param_index] == "double":
                     try:
@@ -144,6 +184,7 @@ def extract_gdb_inputs(raw_ktest_path, param_types, output_file):
                 else:
                     current_case[param_index] = hex_val
                 continue
+            """
 
             # Zpracování hodnoty typu char
             text_match = re.match(r"object \d+: text: (.)", line)

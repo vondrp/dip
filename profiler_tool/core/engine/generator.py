@@ -95,6 +95,16 @@ def generate_main_klee(target_function, params_with_const, header_file):
                     # char * = "něco"
                     f.write(f'    {param_type} *{var_name} = "{const_val}";\n')
                     symbolic_params.append(var_name)
+
+                elif is_pointer and clean_type in ["int", "float", "double"]:
+                    # Např. int * = pole hodnot
+                    elements = const_val.split()
+                    array_init = ", ".join(elements)
+                    array_size = len(elements)
+                    f.write(f'    {clean_type} tmp_arr_{i}[{array_size}]] = {{{array_init}}};\n')
+                    f.write(f'    {clean_type} *{var_name} = tmp_arr_{i};\n')
+                    symbolic_params.append(var_name)
+                
                 elif is_pointer:
                     # Ukazatel na jiný typ – zatím nepodporováno
                     log_warn(f"Přeskakuji konstantu pro nepodporovaný ukazatelový typ: {param_type}")
@@ -107,13 +117,22 @@ def generate_main_klee(target_function, params_with_const, header_file):
                 # Symbolický parametr
                 parts = param.strip().split()
                 param_type = " ".join(parts[:-1])
-                is_pointer = "*" in param_type or "*" in parts[-1]
+                
+                param_name = parts[1]
+
+                log_debug(f" parts {param} parts {param_type} param name: {param_name}")
+                is_pointer = "*" in param_type or "*" in param_name
+
+                log_debug(f"is pointer {is_pointer}")
+                #is_pointer = "*" in param_type or "*" in parts[-1]
                 clean_type = param_type.replace("*", "").strip()
                 var_name = f"param_{i}"
 
                 if clean_type == "char" and is_pointer:
                     f.write(f"    char {var_name}[SIZE];\n")
                     f.write(f"    klee_make_symbolic({var_name}, sizeof({var_name}), \"{var_name}\");\n")
+                    f.write(f"    {var_name}[SIZE - 1] = '\\0';\n")
+
                 elif is_pointer and clean_type in ["int", "float", "double"]:
                     f.write(f"    {clean_type} {var_name}[SIZE];\n")
                     f.write(f"    klee_make_symbolic({var_name}, sizeof({var_name}), \"{var_name}\");\n")

@@ -175,8 +175,13 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
     print("\n Tato funkce má následující parametry:")
     for i, p in enumerate(params):
         print(f"  [{i}] {p}")
+        
     print("\nChcete některé parametry zadat jako *konstanty* (namísto symbolických)?")
     print("Zadáním konstanty lze zjednodušit analýzu a předejít problémům při zpracování vstupů (např. u řetězců nebo struktur).")
+    print("Např.:")
+    print("  - Pro řetězec zadejte: hello")
+    print("  - Pro pole (např. int *): zadejte hodnoty oddělené mezerou: 5 6 7 8")
+
 
     for i, param in enumerate(params):
         user_input = input(f"Zadejte hodnotu pro parametr '{param}' (ENTER ponechá jako symbolický): ")
@@ -203,7 +208,8 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
 
     # Vygenerování testovacích vstupů pro KLEE
     params = functions.get(target_function, [])
-    param_types = [param.split()[0] for param in params]
+    param_types = [parse_param_type(param) for param in params]
+
     bitcode_file = os.path.join(klee_dir, "klee_program.bc")
 
     output_file = os.path.join(KLEE_RESULTS, f"gdb_inputs_{target_function}.txt")
@@ -212,3 +218,25 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
     delete_file(get_generated_main_klee_path())
     log_info(f"Testovací vstupy uloženy: {file_path}")
     log_info(f"Testovací data: {test_data}")
+
+
+def parse_param_type(param_decl):
+    """
+    Převede deklaraci parametru na čistý typ jako např. 'int*' nebo 'double'.
+    Např.:
+        'int *array' -> 'int*'
+        'const char *name' -> 'char*'
+    """
+    tokens = param_decl.replace(',', '').split()
+    base_type = ""
+    for token in tokens[:-1]:
+        # ignoruj 'const' a podobné modifikátory
+        if token == "const":
+            continue
+        base_type += token.replace("*", "")  # odstranění případné * z base
+    var_name = tokens[-1]
+
+    # Pokud v názvu nebo kdekoliv je *, je to pointer
+    if "*" in param_decl:
+        return base_type + "*"
+    return base_type
