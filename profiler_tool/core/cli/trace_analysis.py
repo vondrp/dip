@@ -2,9 +2,9 @@ import os
 import re
 import shlex
 from core.cli.file_selection import fzf_select_file
-from core.engine.tracer import run_gdb_trace, run_gdb_trace_arm_linux
+from core.engine.tracer import run_gdb_trace, run_gdb_trace_qemu
 from core.engine.trace_analysis import analyze_trace
-from config import BUILD_DIR, TRACE_DIR, ANALYSIS_DIR, DEFAULT_ARCHITECTURE
+from config import BUILD_DIR, TRACE_DIR, ANALYSIS_DIR, ACTIVE_ARCHITECTURE
 from config import log_info, log_debug, log_warning, log_error
 
 
@@ -14,7 +14,7 @@ def extract_function_name(binary_file):
     match = re.search(r"binary_[^_]+_([\w\-\d_]+)\.out", os.path.basename(binary_file))
     return match.group(1) if match else "unknown"
 
-def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHITECTURE):
+def trace_analysis(binary_file=None, param_file=None, architecture=ACTIVE_ARCHITECTURE):
     """Umožní uživateli vybrat binární soubor a spustit trace pro více sad parametrů."""
 
     if not binary_file:
@@ -78,8 +78,13 @@ def trace_analysis(binary_file=None, param_file=None, architecture=DEFAULT_ARCHI
         if architecture == "arm":
             trace_file = os.path.join(TRACE_DIR, f"traceArm_{func_name}_{param_str}.log")
             log_info(f"\n Spouštím trace pro {binary_file} s parametry {quoted_params}")
-            run_gdb_trace_arm_linux(binary_file, trace_file, quoted_params)
+            run_gdb_trace_qemu(binary_file, trace_file, quoted_params, architecture)
             json_filename = f"instructionsArm_{func_name}_{param_str}.json"
+        elif architecture == "riscv":
+            trace_file = os.path.join(TRACE_DIR, f"traceRiscv_{func_name}_{param_str}.log")
+            log_info(f"\n Spouštím trace pro {binary_file} s parametry {quoted_params}")
+            run_gdb_trace_qemu(binary_file, trace_file, quoted_params, architecture)
+            json_filename = f"instructionsRiscv_{func_name}_{param_str}.json"
         else:    
             trace_file = os.path.join(TRACE_DIR, f"trace_{func_name}_{param_str}.log")
             log_info(f"\n Spouštím trace pro {binary_file} s parametry {quoted_params}")

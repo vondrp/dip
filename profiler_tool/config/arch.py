@@ -1,2 +1,2 @@
-ARCHITECTURES = ["arm", "native"]
-DEFAULT_ARCHITECTURE = "native"
+ARCHITECTURES = ["arm", "native", "riscv"]
+ACTIVE_ARCHITECTURE = "native"

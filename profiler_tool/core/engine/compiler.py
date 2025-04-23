@@ -113,35 +113,15 @@ def compile_klee(klee_dir, src_file, src_dir, target_arch="native"):
     subprocess.run(["llvm-link-13", main_bc] + bc_files + ["-o", linked_bc], check=True)
     log_info(f"Spojený LLVM bitcode: {linked_bc}")
 
-def compile_x86(binary_file, src_file, src_dir):
-    """Přeloží pouze potřebné `.c` soubory pro `generated_main.c`.
-    
+
+def compile_binary(binary_file, src_file, src_dir, platform="arm"):
+    """Přeloží potřebné `.c` soubory pro danou platformu (arm, riscv, native/x86).
+
     Parametry:
         binary_file (str): Cílový binární soubor.
         src_file (str): Hlavní zdrojový soubor.
         src_dir (str): Adresář se zdrojovými soubory.
-    """
-    needed_headers = find_dependencies(src_file)
-    header_to_source = map_headers_to_sources(src_dir)
-
-    # Najdeme odpovídající `.c` soubory
-    needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
-    
-    needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
-
-    log_debug(f"Needed sources: {needed_sources}")
-
-    compile_cmd = ["gcc", "-g", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
-    log_debug(f"Kompiluji: {' '.join(compile_cmd)}")
-    subprocess.run(compile_cmd, check=True)
-
-def compile_arm_linux(binary_file, src_file, src_dir):
-    """Přeloží pouze potřebné `.c` soubory pro `generated_main.c` pro ARM Linux.
-    
-    Parametry:
-        binary_file (str): Cílový binární soubor.
-        src_file (str): Hlavní zdrojový soubor.
-        src_dir (str): Adresář se zdrojovými soubory.
+        platform (str): Platforma pro kompilaci ('arm', 'riscv', 'native').
     """
     needed_headers = find_dependencies(src_file)
     header_to_source = map_headers_to_sources(src_dir)
@@ -152,8 +132,23 @@ def compile_arm_linux(binary_file, src_file, src_dir):
 
     log_debug(f"Needed sources: {needed_sources}")
 
-    compile_cmd = ["arm-linux-gnueabihf-gcc", "-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer", "-o", binary_file] + list(needed_sources)
-    log_debug(f"Kompiluji: {' '.join(compile_cmd)}")
+    # Výběr překladače a specifických flagů dle platformy
+    if platform == "arm":
+        compiler = "arm-linux-gnueabihf-gcc"
+        flags = ["-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer"]
+    elif platform == "riscv":
+        compiler = "riscv64-linux-gnu-gcc"
+        flags = ["-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer"]
+        #flags = ["-g", "-static", "-march=rv64imac", "-mabi=lp64"]
+    elif platform == "native":
+        compiler = "gcc"
+        flags = ["-g", "-fno-omit-frame-pointer"]
+    else:
+        raise ValueError(f"Neznámá platforma: {platform}")
+
+    compile_cmd = [compiler] + flags + ["-o", binary_file] + list(needed_sources)
+
+    log_debug(f"Kompiluji pro platformu '{platform}': {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
 
 def compile_arm_bm(binary_file, src_file, generated_main_file):

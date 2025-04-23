@@ -14,4 +14,5 @@ DEFAULT_GENERATED_MAIN_KLEE = os.path.join(BASE_DIR, "tests", "src", "generated_
 
 GDB_SCRIPT = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace.py")
 GDB_SCRIPT_ARM = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace_arm.py")
+GDB_SCRIPT_RISCV = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace_riscv.py")
 GDB_SCRIPT_ARM_BM = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace_bare_arm.py")

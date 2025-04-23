@@ -291,7 +291,7 @@ Tento návod popisuje postup instalace QEMU verze 9.2.3 na systém Ubuntu 22.04 
 
 1. Spusťte konfiguraci s požadovanými možnostmi:
     ```bash
-    ./configure --prefix=/usr/local --target-list=arm-softmmu,arm-linux-user
+    ./configure --prefix=/usr/local --target-list=arm-softmmu,arm-linux-user,riscv64-linux-user,riscv64-softmmu
     ```
 
 2. Po úspěšné konfiguraci spusťte kompilaci:
@@ -366,17 +366,19 @@ Tento návod vám pomůže snadno nainstalovat QEMU na vaši distribuci Ubuntu a
 
 ---
 
-3. **Instalace GCC pro ARM linux**
-
-sudo apt install gcc-arm-linux-gnueabihf
-
-4 **Instalace GDB multiarch**
+3. **Instalace GDB multiarch**
 
 sudo apt install gdb-multiarch
 
 sudo add-apt-repository ppa:ubuntu-toolchain-r/test
 
+4. **Instalace GCC pro ARM linux**
 
+sudo apt install gcc-arm-linux-gnueabihf
+
+5. **Instalace GCC pro RISC-V linux**
+
+sudo apt install gcc-riscv64-linux-gnu
 
 # Instalace rozšíření pro Visual Studio Code
 

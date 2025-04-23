@@ -4,10 +4,10 @@ import re
 from core.cli.file_selection import fzf_select_file
 from core.engine.generator import get_generated_main_path, get_generated_main_klee_path
 from core.engine.generator import generate_main, generate_main_klee
-from core.engine.compiler import compile_x86, compile_klee, compile_arm_linux
+from core.engine.compiler import compile_klee, compile_binary
 from core.engine.klee_runner import get_klee_test_inputs
 from core.engine.trace_analysis import analyze_trace
-from config import BUILD_DIR, KLEE_OUTPUT, DEFAULT_ARCHITECTURE, KLEE_RESULTS
+from config import BUILD_DIR, KLEE_OUTPUT, ACTIVE_ARCHITECTURE, KLEE_RESULTS, REMOVE_GENERATED_MAIN
 from config import log_info, log_debug, log_warning, log_error
 
 
@@ -113,7 +113,7 @@ def check_function_in_file(src_file, target_function):
                 exit(1)
     return True
 
-def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, architecture=DEFAULT_ARCHITECTURE):
+def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, architecture=ACTIVE_ARCHITECTURE):
     """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru."""
     header_file = select_header_file(header_file)
     functions = extract_function_from_header(header_file)
@@ -136,16 +136,20 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     # Kompilace
     log_info("\n Kompilace `generated_main.c`...")
     src_dir = os.path.dirname(src_file)
+    binary_file = ""
     if architecture == "arm":
         binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
-        compile_arm_linux(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
+    elif architecture == "riscv":
+        binary_file = os.path.join(BUILD_DIR, f"binary_RISCV_{target_function}.out")
     else:
-        log_debug(f"src file = {src_file}   src dir = {src_dir}")
         binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
-        compile_x86(binary_file=binary_file, src_file=src_file, src_dir=src_dir)
 
+    compile_binary(binary_file=binary_file, src_file=src_file, src_dir=src_dir, platform=architecture)
     log_info(f"Kompilace dokončena pro `{target_function}`.")
-    #delete_file(get_generated_main_path())
+    
+    if REMOVE_GENERATED_MAIN:
+        delete_file(get_generated_main_path())
+    
     if use_klee:
         prepare_klee(header_file, src_file, target_function)
 
@@ -215,7 +219,9 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
     output_file = os.path.join(KLEE_RESULTS, f"gdb_inputs_{target_function}.txt")
     file_path, test_data = get_klee_test_inputs(klee_dir, bitcode_file, param_types, output_file, target_arch=architecture)
 
-    delete_file(get_generated_main_klee_path())
+    if REMOVE_GENERATED_MAIN:
+        delete_file(get_generated_main_klee_path())
+    
     log_info(f"Testovací vstupy uloženy: {file_path}")
     log_info(f"Testovací data: {test_data}")
 

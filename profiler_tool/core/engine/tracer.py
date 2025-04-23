@@ -4,7 +4,7 @@ import time
 import socket
 import tempfile
 import re
-from config import GDB_SCRIPT, GDB_SCRIPT_ARM
+from config import GDB_SCRIPT, GDB_SCRIPT_ARM, GDB_SCRIPT_RISCV
 from config import log_info, log_debug, log_warning, log_error
 
 """
@@ -65,65 +65,72 @@ def wait_for_qemu_ready(timeout=30):
     return False
 
 
-def run_gdb_trace_arm_linux(binary_file, trace_file, args):
+def run_gdb_trace_qemu(binary_file, trace_file, args, platform="arm"):
     """
-    Spustí ARM Linux binárku v QEMU, připojí GDB a provede tracing.
+    Spustí binárku v QEMU, připojí GDB a provede tracing pro ARM nebo RISC-V.
 
     Parametry:
-    binary_file (str): Cesta k ARM binárnímu souboru pro Linux.
-    trace_file (str): Cesta k souboru, kam budou uloženy trace instrukce.
-    args (list): Argumenty pro spuštění binárního souboru v QEMU.
-
-    Návratová hodnota:
-    None
+        binary_file (str): Cesta k binárnímu souboru pro Linux.
+        trace_file (str): Cesta k souboru, kam budou uloženy trace instrukce.
+        args (list): Argumenty pro spuštění binárního souboru v QEMU.
+        platform (str): 'arm' nebo 'riscv'
     """
-    # Ověření dostupnosti QEMU pro Linuxový ARM
-    qemu_executable = shutil.which("qemu-arm")  # nebo shutil.which("qemu-system-arm")
-    if not qemu_executable:
-        raise FileNotFoundError("[ERROR] `qemu-arm` nebo `qemu-system-arm` nebyl nalezen. Zkontrolujte instalaci.")
+    # Výběr QEMU a GDB architektury dle platformy
+    if platform == "arm":
+        qemu_executable = shutil.which("qemu-arm")
+        gdb_arch = "arm"
+        gdb_script = GDB_SCRIPT_ARM
+        trace_cmd = f"trace-asm-arm {trace_file}"
+    elif platform == "riscv":
+        qemu_executable = shutil.which("qemu-riscv64")
+        gdb_arch = "riscv:rv64"
+        gdb_script = GDB_SCRIPT_RISCV
+        trace_cmd = f"trace-asm-riscv {trace_file}"
+    else:
+        raise ValueError(f"Neznámá platforma: {platform}")
 
-    # Ověření dostupnosti GDB multiarch
+    if not qemu_executable:
+        raise FileNotFoundError(f"[ERROR] QEMU pro platformu `{platform}` nebyl nalezen.")
+
     gdb_executable = shutil.which("gdb-multiarch")
     if not gdb_executable:
-        raise FileNotFoundError("[ERROR]  `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
+        raise FileNotFoundError("[ERROR] `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
 
-    # Spustíme QEMU v GDB server módu
-    qemu_cmd = [
-        qemu_executable, "-g", "1234",
-        binary_file, *args
-    ]
-
+    # Spuštění QEMU v GDB server módu
+    qemu_cmd = [qemu_executable, "-g", "1234", binary_file, *args]
     log_info(f"Spouštím QEMU: {' '.join(qemu_cmd)}")
     qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Čekáme, dokud QEMU nebude připraveno na připojení
     if not wait_for_qemu_ready():
         raise RuntimeError("[ERROR] QEMU není připraveno na připojení během timeoutu.")
 
-    # Spustíme GDB a připojíme se k QEMU
+    # GDB příkaz
     gdb_cmd = [
         gdb_executable, "-q",
-        "-ex", f"source {GDB_SCRIPT_ARM}",
+        "-ex", f"source {gdb_script}",
         "-ex", "set pagination off",
         "-ex", "set confirm off",
-        "-ex", "set architecture arm",
+        "-ex", f"set architecture {gdb_arch}",
         "-ex", "set logging file gdb_log.txt",
         "-ex", "set logging overwrite on",
         "-ex", "set logging enabled on",
         "-ex", f"file {binary_file}",
         "-ex", "target remote localhost:1234",
-        "-ex", f"break main",
-        "-ex", f"continue",
-        "-ex", f"trace-asm-arm {trace_file}",
+        "-ex", "break main",
+        "-ex", "continue",
+        "-ex", trace_cmd,
         "-ex", "set logging enabled off",
         "-ex", "quit"
     ]
+
     log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
     subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Ukončíme QEMU po dokončení trace
+    # Ukončíme QEMU
     qemu_proc.terminate()
     log_info("Trace dokončen, QEMU ukončen.")
+
+
 
 
 def run_gdb_trace_arm_bm(binary_file, trace_file, args):

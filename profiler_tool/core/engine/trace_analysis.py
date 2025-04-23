@@ -5,6 +5,7 @@ import subprocess
 import json
 from config import get_call_instructions_regex, get_return_instructions_regex
 from config import log_info, log_debug, log_warning, log_error
+from config import ACTIVE_ARCHITECTURE
 
 """
 Tento skript poskytuje funkce pro analýzu trace souborů, které obsahují instrukce generované během traceování vykonávaných funkcí v binárních souborech.
@@ -46,12 +47,27 @@ def get_runtime_function_address(trace_file, function_name):
     """
 
     call_instruction_regex = get_call_instructions_regex()
+    log_debug(f"call instructions: {call_instruction_regex}")
     try:
         with open(trace_file, "r") as f:
             for line in f:
-                match = re.search(rf"({call_instruction_regex})\s+(0x[0-9a-fA-F]+)\s+<" + re.escape(function_name) + ">", line)
+                # Upravíme regulární výraz pro RISC-V: ignorujeme 'ra' a získáme adresu
+                if ACTIVE_ARCHITECTURE == "riscv":                    
+                    match = re.search(rf"({call_instruction_regex})\s+([a-zA-Z0-9,]+)?\s*(0x[0-9a-fA-F]+)\s+<{re.escape(function_name)}>", line)
+                    #match = re.search(rf"({call_instruction_regex})\s+([0x[0-9a-fA-F]+]+)\s+<" + re.escape(function_name) + ">", line)
+                else:
+                    match = re.search(rf"({call_instruction_regex})\s+(0x[0-9a-fA-F]+)\s+<{re.escape(function_name)}>", line)
+
                 if match:
-                    runtime_addr = int(match.group(2), 16)
+                    log_debug(f" match runtime nalezen {match}")
+                    # V případě RISC-V, pokud máme ra, tak ho ignorujeme
+                    if ACTIVE_ARCHITECTURE == "riscv":
+                        addr = match.group(3)
+                    else:
+                        addr = match.group(2)
+
+                    log_debug(f"hexadecimální adresa: {addr}")                    
+                    runtime_addr = int(addr, 16)
                     log_debug(f"Runtime adresa `{function_name}`: {hex(runtime_addr)}")
                     return runtime_addr
     except FileNotFoundError:
@@ -169,7 +185,9 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
     with open(file_path, "r") as f:
         line = f.readline()
         while line:
-            if re.search(rf"({call_instructions_regex})\s+{hex(runtime_addr_target)} <{function_name}>", line) and inside_target_function != True:
+            if re.search(rf"({call_instructions_regex})\s+(?:[a-zA-Z0-9_]+\s*,\s*)?{hex(runtime_addr_target)}\s+<{re.escape(function_name)}>", line) and not inside_target_function:
+                log_debug(f"v parse_trace zaznamenáno volání funkce")
+            #if re.search(rf"({call_instructions_regex})\s+{hex(runtime_addr_target)} <{function_name}>", line) and inside_target_function != True:
                 inside_target_function = True
                 line = f.readline()
                 continue
@@ -188,7 +206,8 @@ def parse_trace(file_path, runtime_addr_target, static_addr_target, binary_file,
                         source_line_counts[last_executed_line] += 1
                     
                     # volani funkci uvnitr testovane funkce
-                    call_match = re.match(rf".*({call_instructions_regex})\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
+                    #call_match = re.match(rf".*({call_instructions_regex})\s+(0x[0-9a-fA-F]+)\s+<(.*?)>", line)
+                    call_match = re.match(rf".*({call_instructions_regex})\s+(?:[a-zA-Z0-9_]+\s*,\s*)?(0x[0-9a-fA-F]+)\s+<(.+?)>", line)
                     if call_match:
                         called_function = call_match.group(3)
                         log_debug(f"Detekováno volání `{called_function}` na řádku `{last_executed_line}`")
