@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Zjisti cestu ke složce, kde je tento skript
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Přejdi do tohoto adresáře
+cd "$DIR"
+
+
+python3 -m core.cli.main "$@"
