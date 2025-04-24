@@ -4,6 +4,7 @@ import re
 import subprocess
 from core.engine.generator import get_generated_main_path, get_generated_main_klee_path
 from config import log_info, log_debug
+from config import BM_STARTUP, BM_LINKER
 
 # Tento skript se zabývá kompilací C programů pro různé architektury a platformy,
 # včetně generování bitového kódu pro KLEE a kompilace pro ARM, x86 a bare-metal.
@@ -174,3 +175,64 @@ def compile_arm_bm(binary_file, src_file, generated_main_file):
 
     log_info(f"Kompiluji pro ARM: {' '.join(compile_cmd)}")
     subprocess.run(compile_cmd, check=True)
+
+def compile_binary_bm(binary_file, src_file, src_dir, platform="arm_bm"):
+    """Přeloží potřebné `.c` soubory pro platformu bare-metal ARM (arm_bm).
+
+    Parametry:
+        binary_file (str): Cílový binární soubor.
+        src_file (str): Hlavní zdrojový soubor.
+        src_dir (str): Adresář se zdrojovými soubory.
+        platform (str): Platforma pro kompilaci ('arm_bm').
+    """
+    needed_headers = find_dependencies(src_file)
+    header_to_source = map_headers_to_sources(src_dir)
+
+    # Najdeme odpovídající `.c` soubory
+    needed_sources = {header_to_source[h] for h in needed_headers if h in header_to_source}
+    
+    needed_sources.add(get_generated_main_path())  # Vždy přidáme `generated_main.c`
+
+    log_debug(f"Needed sources: {needed_sources}")
+
+    if platform == "arm_bm":
+        # Nastavení pro ARM bare-metal (ARM toolchain: arm-none-eabi)
+        assembler = "arm-none-eabi-as"
+        compiler = "arm-none-eabi-gcc"
+        linker = "arm-none-eabi-ld"
+        objcopy = "arm-none-eabi-objcopy"
+        
+        # Přepínače pro ARM bare-metal kompilaci
+        flags = ["-mcpu=arm926ej-s", "-g", "-nostdlib", "-ffreestanding", "-static"]
+
+        # Linker a startup soubory
+        linker_script = BM_LINKER  # Předpokládáme, že BM_LINKER obsahuje cestu k linker skriptu
+        startup_file = BM_STARTUP  # Předpokládáme, že BM_STARTUP obsahuje cestu k startup souboru
+
+        # Kompilace startup souboru
+        log_debug(f"Spouštím assembler pro startup: {startup_file}")
+        #startup_output = os.path.join(os.path.dirname(startup_file), "startup.o")
+
+        startup_output = "startup.o"
+
+        subprocess.run([assembler, "-g", startup_file, "-o", startup_output], check=True)
+
+        # Kompilace C souborů
+        for src in needed_sources:
+            log_debug(f"Komplikuji C soubor: {src}")
+            subprocess.run([compiler] + flags + ["-c", src, "-o", f"{src}.o"], check=True)
+
+        # Linkování všech objektových souborů
+        object_files = [f"{src}.o" for src in needed_sources] #+ [startup_output]
+        log_debug(f"Linkování: {linker} -T {linker_script} {' '.join(object_files)} -o test.elf")
+        subprocess.run([linker, "-T", linker_script] + object_files + ["-lnosys", "-lgcc", "-o", "test.elf"], check=True)
+
+
+        # Převod ELF na binární soubor
+        log_debug(f"Převod ELF na binární soubor: {objcopy} -O binary test.elf {binary_file}")
+        subprocess.run([objcopy, "-O", "binary", "test.elf", binary_file], check=True)
+
+    else:
+        raise ValueError(f"Neznámá platforma: {platform}")
+    
+    log_debug(f"Vygenerován binární soubor: {binary_file}")

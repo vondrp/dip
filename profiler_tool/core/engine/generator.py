@@ -152,151 +152,191 @@ def generate_main_klee(target_function, params_with_const, header_file):
     log_debug("Vygenerován `generated_main_klee.c` se správnou podporou pro pole, řetězce i konstanty.")
 
 
+def generate_main_header_includes(header_filename, bm=False):
+    """
+    Vytvoří hlavičkový soubor pro `main` funkci.
+
+    Tato funkce generuje základní hlavičky a potřebné definice pro soubor `main.c`.
+    Podle parametru `bm` se rozhoduje, zda se bude generovat kód pro bare-metal nebo pro OS.
+
+    Args:
+    - header_filename (str): Název hlavičkového souboru, který bude zahrnut.
+    - bm (bool): Určuje, zda generovat kód pro bare-metal (`True`) nebo pro OS (`False`).
+
+    Returns:
+    - str: Generovaný kód zahrnující potřebné hlavičky.
+    """
+    includes = ""
+    if not bm:
+        includes += '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n'
+    includes += '#define MAIN_DEFINED\n'
+    includes += f'#include "{header_filename}"\n\n'
+    return includes
+
+
+def generate_param_code(params, bm=False):
+    """
+    Generuje kód pro parametry funkce v `main` funkci.
+
+    Tato funkce vytváří kód pro parametry funkce na základě typu a názvu parametru. Podle parametru `bm` 
+    se generují různé hodnoty pro bare-metal a OS verzi. Pro bare-metal jsou parametry hardkodované, 
+    zatímco pro OS jsou parametry čteny z argumentů příkazové řádky.
+
+    Args:
+    - params (list): Seznam parametrů, kterými funkce přijímá.
+    - bm (bool): Určuje, zda generovat kód pro bare-metal (`True`) nebo pro OS (`False`).
+
+    Returns:
+    - tuple: Generovaný kód pro parametry a seznam konvertovaných parametrů pro funkci.
+    """
+    code = ""
+    converted_params = []
+    params = [p.strip() for p in params if p.strip()]
+    has_void = len(params) == 1 and params[0] == "void"
+
+    for i, param in enumerate(params):
+        if param == "void":
+            continue
+
+        param_type = param.split()[0]
+        param_name = param.split()[1] if len(param.split()) > 1 else f"param{i+1}"
+        param_name_clean = param_name[1:] if "*" in param_name else param_name
+
+        if bm:
+            # Bare-metal: hardcoded hodnoty
+            if "*" in param_name:
+                if any(t in param_type for t in ("int", "unsigned")):
+                    code += f"{param_type} {param_name_clean}[] = {{1, 2, 3, 4}};\n"
+                elif any(t in param_type for t in ("float", "double")):
+                    code += f"{param_type} {param_name_clean}[] = {{1.1, 2.2, 3.3, 4.4}};\n"
+                elif "char" in param_type and "*" in param_type:
+                    code += f"{param_type} {param_name_clean}[] = {{\"foo\", \"bar\", \"baz\"}};\n"
+                else:
+                    code += f"{param_type} {param_name_clean}[] = {{0}};\n"
+                converted_params.append(param_name_clean)
+            else:
+                if "int" in param_type:
+                    code += f"{param_type} {param_name} = {i + 1};\n"
+                elif "unsigned" in param_type:
+                    code += f"{param_type} {param_name} = {i + 10}u;\n"
+                elif "float" in param_type:
+                    code += f"{param_type} {param_name} = {float(i + 1):.1f}f;\n"
+                elif "double" in param_type:
+                    code += f"{param_type} {param_name} = {float(i + 1):.2f};\n"
+                elif "char" in param_type and "*" in param_type:
+                    code += f'{param_type} {param_name} = "test_string";\n'
+                elif "char" in param_type:
+                    code += f"{param_type} {param_name} = 'a';\n"
+                else:
+                    code += f"{param_type} {param_name} = 0;\n"
+                converted_params.append(param_name)
+        else:
+            # OS: čte z argv
+            if "*" in param_name:
+                num_var = f"{param_name_clean}"
+                count_var = f"count_{i+1}"
+                token_var = f"token_{i+1}"
+                idx_var = f"i_{i+1}"
+                tmp_var = f"tmp_{i+1}"
+                arg_idx = f"argv[{i+1}]"
+
+                if any(t in param_type for t in ("int", "float", "double", "unsigned")):
+                    code += f"    int {count_var} = 1;\n"
+                    code += f"    char *{tmp_var} = {arg_idx};\n"
+                    code += f"    for (int i = 0; {tmp_var}[i]; ++i) if ({tmp_var}[i] == ' ') {count_var}++;\n"
+                    code += f"    {param_type} {num_var}[{count_var}];\n"
+                    code += f"    int {idx_var} = 0;\n"
+                    code += f"    char *{token_var} = strtok({arg_idx}, \" \");\n"
+                    code += f"    while ({token_var} != NULL && {idx_var} < {count_var}) {{\n"
+                    convert_func = "atoi" if "int" in param_type or "unsigned" in param_type else "atof"
+                    code += f"        {num_var}[{idx_var}++] = {convert_func}({token_var});\n"
+                    code += f"        {token_var} = strtok(NULL, \" \");\n"
+                    code += f"    }}\n"
+                    converted_params.append(num_var)
+                
+                elif "char" in param_type:
+                    converted_params.append(arg_idx)
+
+                else:
+                    code += f"    {param_type} {param_name}[argc - 1];\n"
+                    code += f"    for (int i = 0; i < argc - 1; ++i) {{\n"
+                    code += f"        {param_name}[i] = argv[i + 1];\n"
+                    code += f"    }}\n"
+                    converted_params.append(param_name)
+            else:
+                if "int" in param_type:
+                    converted_params.append(f"atoi(argv[{i+1}])")
+                elif any(t in param_type for t in ("float", "double")):
+                    converted_params.append(f"atof(argv[{i+1}])")
+                elif "char" in param_type:
+                    converted_params.append(f"argv[{i+1}][0]")
+                elif "unsigned" in param_type:
+                    converted_params.append(f"strtoul(argv[{i + 1}], NULL, 10)")    
+                else:
+                    converted_params.append(f"argv[{i+1}]")
+
+    return code, ", ".join(converted_params)
+
+
 def generate_main(target_function, params, header_file):
     """
     Vytvoří `generated_main.c` pro volání vybrané funkce s argumenty z příkazové řádky.
 
     Tento soubor obsahuje funkci `main`, která přijímá argumenty z příkazové řádky,
     konvertuje je do odpovídajících typů a volá cílovou funkci s těmito parametry.
-    
+
     Args:
     - target_function (str): Název testované funkce.
     - params (list): Seznam parametrů funkce.
     - header_file (str): Cesta k hlavičkovému souboru obsahujícímu deklaraci funkce.
+
+    Returns:
+    - None: Funkce generuje soubor `generated_main.c`.
     """
-    
     generated_main_path = os.path.join(os.path.dirname(header_file), "generated_main.c")
-    header_filename = os.path.basename(header_file)
     set_generated_main_path(generated_main_path)
-    
-    # získej seznam parametrů
-    params = [p.strip() for p in params if p.strip()]
+    header_filename = os.path.basename(header_file)
     has_void = len(params) == 1 and params[0] == "void"
 
-
     with open(generated_main_path, "w") as f:
-        f.write('#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n')
-        f.write('#define MAIN_DEFINED\n')
-        f.write(f'#include "{header_filename}"\n\n')
-
+        f.write(generate_main_header_includes(header_filename, bm=False))
         f.write("int main(int argc, char *argv[]) {\n")
-
         if not has_void:
-            f.write("    if (argc < %d) {\n" % (len(params) + 1))
+            f.write(f"    if (argc < {len(params) + 1}) {{\n")
             f.write(f'        printf("Použití: %s {" ".join(["<param>" for _ in params])}\\n", argv[0]);\n')
             f.write("        return 1;\n    }\n")
-
-        converted_params = []
-        for i, param in enumerate(params):
-            if param.strip() == "void":
-                continue
-
-            param_type = param.split()[0]  # Typ parametru
-            param_name = param.split()[1] if len(param.split()) > 1 else None  # Název parametru
-
-            param_name_clean = param_name[1:]  # Název parametru bez prvního znaku (ukazetele *)
-
-            # Zpracování pro ukazatel
-            if "*" in param_name:  # Pokud jde o ukazatel (např. int* array)
-
-                if any(t in param_type for t in ("int", "float", "double")):
-                    f.write(f'    // Zpracování pole z jednoho argumentu\n')
-                    f.write(f'    int count_{i + 1} = 1;\n')
-                    f.write(f'    char *tmp_{i + 1} = argv[{i + 1}];\n')
-                    f.write(f'    for (int i = 0; tmp_{i + 1}[i]; ++i) {{\n')
-                    f.write(f'        if (tmp_{i + 1}[i] == \' \') count_{i + 1}++;\n')
-                    f.write(f'    }}\n')
-                    f.write(f'    {param_type} {param_name_clean}[count_{i + 1}];\n')
-                    f.write(f'    int i_{i + 1} = 0;\n')
-                    f.write(f'    char *token_{i + 1} = strtok(argv[{i + 1}], " ");\n')
-                    f.write(f'    while (token_{i + 1} != NULL && i_{i + 1} < count_{i + 1}) {{\n')
-                    if "int" in param_type:
-                        f.write(f'          {param_name_clean}[i_{i + 1}++] = atoi(token_{i + 1}); \n')
-                    else:
-                        f.write(f'          {param_name_clean}[i_{i + 1}++] = atof(token_{i + 1}); \n')
-                    f.write(f'          token_{i + 1} = strtok(NULL, " "); \n')
-                    f.write(f'    }}\n')
-                    converted_params.append(param_name_clean)
-                elif "char" in param_type:  # Zpracování pro char*
-                    # Pro char* použijeme celý řetězec (argv[i+1])
-                    converted_params.append(f"argv[{i + 1}]")
-                else:
-                    f.write(f'    {param_type} {param_name}[argc - 1];\n')
-                    f.write(f'    for (int i = 0; i < argc - 1; ++i) {{\n')
-                    f.write(f'        {param_name}[i] = argv[i + 1];\n')  # Pro ostatní typy
-                    f.write(f'    }}\n')
-                    converted_params.append(param_name)
-
-            # Zpracování pro ostatní hodnoty (ne ukazatel)
-            else:  # Neukazatel, pouze hodnoty
-                if "int" in param_type:
-                    converted_params.append(f"atoi(argv[{i + 1}])")
-                elif "float" in param_type:
-                    converted_params.append(f"atof(argv[{i + 1}])")
-                elif "char" in param_type:
-                    converted_params.append(f"argv[{i + 1}]")
-                elif "unsigned" in param_type:
-                    converted_params.append(f"strtoul(argv[{i + 1}], NULL, 10)")    
-                elif "void" in param_type:
-                    f.write(f'    // Parametr typu void není podporován.\n')
-                else:
-                    converted_params.append(f"argv[{i + 1}]")
-
+        code, args = generate_param_code(params, bm=False)
+        f.write(code)
         f.write(f'    printf("Spouštím test funkce: {target_function}\\n");\n')
-        f.write(f"    {target_function}({', '.join(converted_params)});\n")
+        f.write(f"    {target_function}({args});\n")
         f.write("    return 0;\n}\n")
-    
-    log_debug(f"Vygenerován `generated_main.c`.")
 
-def generate_main_arm(target_function, params):
+
+
+def generate_main_bm(target_function, params, header_file):
     """
-    Vytvoří `generated_main_arm.c` přizpůsobený pro bare-metal ARM.
+    Vytvoří `generated_main.c` pro volání vybrané funkce v bare-metal režimu.
 
-    Tento soubor je určen pro generování kódu pro bare-metal ARM aplikace.
-    Obsahuje simulovanou funkci pro výstup přes UART a generování parametrů
-    s pevnými hodnotami pro testování.
+    Tento soubor obsahuje funkci `main`, která nevyžaduje argumenty z příkazové řádky,
+    ale všechny hodnoty jsou hardkodované pro bare-metal prostředí.
 
     Args:
     - target_function (str): Název testované funkce.
     - params (list): Seznam parametrů funkce.
+    - header_file (str): Cesta k hlavičkovému souboru obsahujícímu deklaraci funkce.
+
+    Returns:
+    - None: Funkce generuje soubor `generated_main.c`.
     """
-    
-    generate_main_file = os.path.join(os.path.dirname(__file__), "..", "src", "generated_main_arm.c")
+    generated_main_path = os.path.join(os.path.dirname(header_file), "generated_main.c")
+    set_generated_main_path(generated_main_path)
+    header_filename = os.path.basename(header_file)
 
-    with open(generate_main_file , "w") as f:
-        f.write('#include <stdint.h>\n')  # Použití stdint.h místo stdlib.h
-        f.write('#include "arm_test_program.h"\n\n')
-
-        # Simulovaná výstupní funkce pro bare-metal (nahradí printf)
-        f.write("void arm_print(const char *msg) {\n")
-        f.write('    volatile char *uart = (volatile char *)0x09000000; // UART na QEMU\n')
-        f.write('    while (*msg) *uart = *(msg++);\n')
-        f.write("}\n\n")
-
-        # Hlavní funkce (nebude vracet int, protože běžně na ARM bez OS není návratová hodnota)
+    with open(generated_main_path, "w") as f:
+        f.write(generate_main_header_includes(header_filename, bm=True))
         f.write("void main() {\n")
-
-        f.write(f'    arm_print("Spouštím test funkce: {target_function}\\n");\n')
-
-        converted_params = []
-        for i, param in enumerate(params):
-            param_type = param.split()[0]
-            var_name = f"param_{i}"
-
-            if "int" in param_type:
-                f.write(f"    int {var_name} = {i * 10 + 1};  // Testovací hodnota\n")
-            elif "float" in param_type or "double" in param_type:
-                f.write(f"    {param_type} {var_name} = {i * 0.5 + 1.0};\n")
-            elif "char" in param_type:
-                f.write(f"    char {var_name} = 'A' + {i};\n")
-            else:
-                f.write(f"    {param_type} {var_name};  // U neznámých typů neinicializujeme\n")
-
-            converted_params.append(var_name)
-
-        f.write(f"    {target_function}({', '.join(converted_params)});\n")
-        f.write("    while (1); // Nekonečná smyčka (běžné u bare-metal aplikací)\n")
+        code, args = generate_param_code(params, bm=True)
+        f.write(code)
+        f.write(f"    {target_function}({args});\n")
+        f.write("    while (1); // Nekonečná smyčka\n")
         f.write("}\n")
-
-    log_debug(f"Vygenerován `generated_main_arm.c` pro ARM bare-metal.")
-    return generate_main_file 
