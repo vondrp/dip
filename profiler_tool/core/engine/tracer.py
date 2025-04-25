@@ -131,70 +131,79 @@ def run_gdb_trace_qemu(binary_file, trace_file, args, platform="arm"):
     log_info("Trace dokončen, QEMU ukončen.")
 
 
-
-
-def run_gdb_trace_arm_bm(binary_file, trace_file, args):
+def run_gdb_trace_qemu_bm(binary_file, trace_file, platform="arm_bm", qemu_machine="virt", cpu_model=None, qemu_extra_args=None):
     """
-    Spustí ARM binárku v QEMU, připojí GDB a spustí trace skript.
+    Spustí bare-metal binárku v QEMU, připojí GDB a provede tracing pro ARM nebo RISC-V.
 
     Parametry:
-    binary_file (str): Cesta k ARM binárnímu souboru pro QEMU.
-    trace_file (str): Cesta k souboru, kam budou uloženy trace instrukce.
-    args (list): Argumenty pro spuštění binárního souboru v QEMU.
-
-    Návratová hodnota:
-    None
+        binary_file (str): Cesta k binárnímu souboru pro bare-metal.
+        trace_file (str): Cesta k souboru, kam budou uloženy trace instrukce.
+        platform (str): 'arm_bm' nebo 'riscv_bm'
+        qemu_machine (str): QEMU machine model (např. "virt", "lm3s6965evb", "sifive_e").
+        cpu_model (str|None): Volitelný CPU model (např. "cortex-a15" pro ARM).
+        qemu_extra_args (list|None): Další argumenty pro QEMU (např. ["-nographic"])
     """
-    # Ověření dostupnosti QEMU-system-arm
-    qemu_executable = shutil.which("qemu-system-arm")
+    if platform == "arm_bm":
+        qemu_executable = shutil.which("qemu-system-arm")
+        gdb_arch = "arm"
+        gdb_script = GDB_SCRIPT_ARM
+        trace_cmd = f"trace-asm-arm {trace_file}"
+    elif platform == "riscv_bm":
+        qemu_executable = shutil.which("qemu-system-riscv64")
+        gdb_arch = "riscv:rv64"
+        gdb_script = GDB_SCRIPT_RISCV
+        trace_cmd = f"trace-asm-riscv {trace_file}"
+    else:
+        raise ValueError(f"Neznámá platforma: {platform}")
+
     if not qemu_executable:
-        raise FileNotFoundError("[ERROR] `qemu-system-arm` nebyl nalezen. Zkontrolujte instalaci.")
+        raise FileNotFoundError(f"[ERROR] QEMU pro platformu `{platform}` nebyl nalezen.")
 
-    # Ověření dostupnosti GDB pro ARM
-    gdb_executable = shutil.which("arm-none-eabi-gdb") or shutil.which("gdb-multiarch")
+    gdb_executable = shutil.which("gdb-multiarch")
     if not gdb_executable:
-        raise FileNotFoundError("[ERROR] `arm-none-eabi-gdb` nebo `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
+        raise FileNotFoundError("[ERROR] `gdb-multiarch` nebyl nalezen. Zkontrolujte instalaci.")
 
-    # Spustíme QEMU v GDB server módu (zastaveno na startu)
     qemu_cmd = [
         qemu_executable,
-        "-M", "virt",            # Virtuální ARM platforma
-        "-cpu", "cortex-a15",     # CPU model
-        "-m", "128M",            # Nastavení paměti
-        "-nographic",            # Konzolový mód
-        "-L", "/home/vondrp/buildroot/output/host/share/qemu", 
-        "-bios", "efi-virtio.rom",
+        "-M", qemu_machine,
+        "-nographic",
         "-kernel", binary_file,
-        "-append", "console=ttyAMA0",  # Simulace konzole
-        "-gdb", "tcp::1234",      # Otevře GDB server na portu 1234
-        "-S"                     # Zastaví před spuštěním
+        "-gdb", "tcp::1234",
+        "-S"
     ]
 
-    log_info(f"Spouštím QEMU: {' '.join(qemu_cmd)}")
+    if cpu_model and platform == "arm_bm":
+        qemu_cmd += ["-cpu", cpu_model]
+
+    if qemu_extra_args:
+        qemu_cmd += qemu_extra_args
+
+    log_info(f"Spouštím QEMU (bare-metal): {' '.join(qemu_cmd)}")
     qemu_proc = subprocess.Popen(qemu_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
     if not wait_for_qemu_ready():
         raise RuntimeError("[ERROR] QEMU není připraveno na připojení během timeoutu.")
-    
-    # Spustíme GDB pro ARM
+
     gdb_cmd = [
         gdb_executable, "-q",
+        "-ex", f"source {gdb_script}",
         "-ex", "set pagination off",
         "-ex", "set confirm off",
-        "-ex", "set architecture arm",
+        "-ex", f"set architecture {gdb_arch}",
+        "-ex", "set logging file gdb_log.txt",
+        "-ex", "set logging overwrite on",
+        "-ex", "set logging enabled on",
         "-ex", f"file {binary_file}",
         "-ex", "target remote localhost:1234",
-        "-ex", "set $pc = 0x8000",   
-        "-ex", "set $sp = 0x810000",
-        "-ex", f"source {GDB_SCRIPT_ARM_BM}",
-        "-ex", "starti",
-        "-ex", f"trace-asm-arm {trace_file}",
+        "-ex", "break *0x0",
+        "-ex", "continue",
+        "-ex", trace_cmd,
+        "-ex", "set logging enabled off",
         "-ex", "quit"
     ]
 
     log_info(f"Spouštím GDB: {' '.join(gdb_cmd)}")
-    subprocess.run(gdb_cmd, check=True)
+    subprocess.run(gdb_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 
-    # Ukončíme QEMU po dokončení trace
     qemu_proc.terminate()
     log_info("Trace dokončen, QEMU ukončen.")
