@@ -347,6 +347,8 @@ def analyze_trace(trace_file, binary_file, target_function, output_json, params)
         log_error(f"Nepodařilo se získat runtime adresu pro `{trace_file}`, přeskočeno.")
         return
 
+    #register_file = + trace_file + ".regs"
+    #registers = load_registers_from_file(register_file)
     source_line_counts, crash_detected, last_executed_line = parse_trace(
         trace_file, runtime_addr_target, static_addr_target, binary_file, target_function
     )
@@ -360,3 +362,26 @@ def analyze_trace(trace_file, binary_file, target_function, output_json, params)
 
     save_json(source_line_counts, crash_detected, last_executed_line, output_json, target_function, params, source_file)
     log_info(f"Analýza `{trace_file}` dokončena a výsledky uloženy do `{output_json}`.")    
+
+
+def load_registers_from_file(regs_file_path):
+    """
+    Načte registry ze souboru ve formátu generovaném GDB.
+    
+    Vrací:
+        dict[str, int] - mapa názvů registrů na jejich hodnoty (v hex).
+    """
+    registers = {}
+
+    with open(regs_file_path, "r") as file:
+        for line in file:
+            parts = line.strip().split()
+            if len(parts) >= 2:
+                reg_name = parts[0]
+                reg_value_hex = parts[1]
+                try:
+                    registers[reg_name] = int(reg_value_hex, 16)
+                except ValueError:
+                    pass  # pokud by tam náhodou bylo něco divného (nemělo by)
+    
+    return registers

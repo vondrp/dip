@@ -23,7 +23,6 @@ def run_gdb_trace(binary_file, trace_file, args):
     binary_file (str): Cesta k binárnímu souboru, který má být traceován.
     trace_file (str): Cesta k souboru, kam budou uloženy trace instrukce.
     args (list): Seznam argumentů, které budou předány binárnímu souboru při spuštění.
-
     Návratová hodnota:
     None
     """

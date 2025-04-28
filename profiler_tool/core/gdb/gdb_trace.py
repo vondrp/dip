@@ -10,7 +10,11 @@ class TraceAsm(gdb.Command):
             gdb.write("Použití: trace-asm <output_file>\n")
             return
         
-        output_file = argv[0]    
+        output_file = argv[0]
+        #tested_function = argv[1]
+        #regs_file = output_file + ".regs"   # <<< nový soubor pro registry
+
+        registers_wrote = False
         thread = gdb.inferiors()[0].threads()[0]
 
         text_base = "0x0"
@@ -20,6 +24,7 @@ class TraceAsm(gdb.Command):
                 text_base = line.split()[0]
                 break
 
+    
         with open(output_file, "w") as f:
             f.write(f"TEXT_BASE {text_base}\n")
             gdb.write("Spuštěna analýza instrukcí... (běží v pozadí)\n")
@@ -35,6 +40,17 @@ class TraceAsm(gdb.Command):
                     if instr.startswith("call") or instr.startswith("jmp"):
                         called_function = instr.split()[-1]
                         f.write(f"[CALL] {function_name} -> {called_function}\n")
+
+                        #called_function = instr.split()[-1].strip('<>')
+                        """
+                        if called_function == tested_function and registers_wrote is False:
+                            # Zapis registrů
+                            with open(regs_file, "w") as rf:
+                                gdb.write("Ukládám snapshot registrů...\n")
+                                regs = gdb.execute("info registers", to_string=True)
+                                rf.write(regs)
+                            registers_wrote = True    
+                        """
 
                     f.write(f"{function_name}, {hex(pc)}: {instr}\n")
 
