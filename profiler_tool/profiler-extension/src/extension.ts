@@ -55,9 +55,23 @@ export function activate(context: vscode.ExtensionContext) {
             
             const useKlee = await vscode.window.showQuickPick(['Ano', 'Ne'], { placeHolder: 'Použít KLEE analýzu?' });
             const kleeFlag = useKlee === 'Ano' ? '--klee' : '';
-            
+
+            const mainMode = await vscode.window.showQuickPick(['auto', 'template', 'own'], { placeHolder: 'Vyberte mód generování main.c' });
+            if (!mainMode) return;
+
+            let ownMainFileArg = '';
+            if (mainMode === 'own') {
+                const ownMainFile = await selectFile('Vyberte vlastní main soubor (.c)', ['c']);
+                if (!ownMainFile) {
+                    vscode.window.showErrorMessage('Musíte vybrat vlastní main soubor pro mód "own".');
+                    return;
+                }
+                ownMainFileArg = `--own-main-file "${ownMainFile}"`;
+            }
+
             // Spuštění Python skriptu pro přípravu funkce
-            runPythonScript('core.cli', `prepare-function -H "${headerFile}" -c "${sourceFile}" -f "${functionName}" ${kleeFlag}`);
+            const command = `prepare-function -H "${headerFile}" -c "${sourceFile}" -f "${functionName}" --main-mode ${mainMode} ${ownMainFileArg} ${kleeFlag}`;
+            runPythonScript('core.cli', command.trim());
         }),
 
         vscode.commands.registerCommand('profiler.traceAnalysis', async () => {
@@ -100,15 +114,30 @@ export function activate(context: vscode.ExtensionContext) {
             if (!headerFile || !sourceFile) return;
             
             const functionName = await vscode.window.showInputBox({ prompt: 'Zadejte název funkce (nepovinné)' });
-            let resultPath: string; // definice proměnné pro uchování cesty k výsledku analýzy
 
-            if (!functionName) {
-                console.log("Funkce není zadána, pokračujeme bez funkce");
-                resultPath = await runPythonScriptReturn('core.cli.main', `func-analyze -H "${headerFile}" -c "${sourceFile}" -f "${functionName}"`);
-            } else {
-                resultPath = await runPythonScriptReturn('core.cli.main', `func-analyze -H "${headerFile}" -c "${sourceFile}" -f "${functionName}"`);
+            const mainMode = await vscode.window.showQuickPick(['auto', 'template', 'own'], { placeHolder: 'Vyberte mód generování main.c' });
+            if (!mainMode) return;
+
+            let ownMainFileArg = '';
+            if (mainMode === 'own') {
+                const ownMainFile = await selectFile('Vyberte vlastní main soubor (.c)', ['c']);
+                if (!ownMainFile) {
+                    vscode.window.showErrorMessage('Musíte vybrat vlastní main soubor pro mód "own".');
+                    return;
+                }
+                ownMainFileArg = `--own-main-file "${ownMainFile}"`;
             }
-            
+
+            // Připravíme příkaz
+            const command = `func-analysis -H "${headerFile}" -c "${sourceFile}" -f "${functionName || ''}" --main-mode ${mainMode} ${ownMainFileArg}`;
+
+            // Spuštění Python skriptu
+            const resultPath = await runPythonScriptReturn('core.cli.main', command.trim());
+            if (!resultPath) {
+                vscode.window.showErrorMessage('Chyba: nebyla vrácena cesta k výsledku analýzy.');
+                return;
+            }
+
             const data = loadJsonFile(resultPath);
             if (!data) return;
             

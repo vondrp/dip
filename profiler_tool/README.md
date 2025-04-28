@@ -37,6 +37,8 @@ python3 -m core.cli.main prepare-function -H headers.h -c source.c -f func_name 
 -c, --source – Zdrojový soubor (.c)
 -f, --function – Název cílové funkce
 --klee – Aktivuje KLEE testování
+--main-mode	– Způsob generování main.c (auto, template, own)
+--own-main-file	– Cesta k vlastnímu main.c souboru (jen pro own)
 
 
 ### trace-analysis
@@ -79,12 +81,12 @@ python3 -m core.cli.main prepare-klee -H headers.h -c source.c -f func_name
 -f, --function – Název funkce
 
 
-### func-analyze
+### func-analysis
 Kombinuje: výběr funkce → přeložení → spuštění → výstup ve formátu JSON.
 
 # Použití:
 ```
-python3 -m core.cli.main func-analyze -H headers.h -c source.c -f func_name [--result-file output.json]4
+python3 -m core.cli.main func-analysis -H headers.h -c source.c -f func_name [--result-file output.json]4
 ```
 
 # Parametry:
@@ -92,6 +94,8 @@ python3 -m core.cli.main func-analyze -H headers.h -c source.c -f func_name [--r
 -c, --source – Zdrojový soubor (.c)
 -f, --function – Název funkce
 --result-file – Výstupní soubor s JSON výsledkem
+--main-mode	– Způsob generování main.c (auto, template, own)
+--own-main-file	– Cesta k vlastnímu main.c souboru (jen pro own)
 
 ######  Instalace závislostí 
 

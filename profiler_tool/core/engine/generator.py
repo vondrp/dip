@@ -340,3 +340,25 @@ def generate_main_bm(target_function, params, header_file):
         f.write(f"    {target_function}({args});\n")
         f.write("    while (1); // Nekonečná smyčka\n")
         f.write("}\n")
+
+def generate_main_template(target_function, params, header_file):
+    """
+    Vytvoří šablonový soubor `generated_main.c`, který si uživatel může upravit ručně.
+
+    Args:
+    - target_function (str): Název cílové funkce.
+    - params (list): Seznam parametrů funkce.
+    - header_file (str): Cesta k hlavičkovému souboru.
+    """
+    generated_main_path = os.path.join(os.path.dirname(header_file), "generated_main.c")
+    set_generated_main_path(generated_main_path)
+    header_filename = os.path.basename(header_file)
+
+    with open(generated_main_path, "w") as f:
+        f.write(generate_main_header_includes(header_filename, bm=False))
+        f.write("int main(int argc, char *argv[]) {\n")
+        f.write("    // TODO: Přidejte vlastní kód pro načítání parametrů.\n")
+        f.write(f"    // Příklad volání funkce:\n")
+        params_list = ", ".join(["/* param */" for _ in params]) if params else ""
+        f.write(f"    {target_function}({params_list});\n")
+        f.write("    return 0;\n}\n")

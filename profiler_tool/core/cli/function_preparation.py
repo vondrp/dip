@@ -1,9 +1,10 @@
 import os
 import re
+import shutil
 
 from core.cli.file_selection import fzf_select_file
-from core.engine.generator import get_generated_main_path, get_generated_main_klee_path
-from core.engine.generator import generate_main, generate_main_klee
+from core.engine.generator import get_generated_main_path, get_generated_main_klee_path, set_generated_main_path
+from core.engine.generator import generate_main, generate_main_klee, generate_main_template
 from core.engine.compiler import compile_klee, compile_binary
 from core.engine.klee_runner import get_klee_test_inputs
 from core.engine.trace_analysis import analyze_trace
@@ -113,40 +114,23 @@ def check_function_in_file(src_file, target_function):
                 exit(1)
     return True
 
-def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, architecture=ACTIVE_ARCHITECTURE):
+def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, architecture=ACTIVE_ARCHITECTURE, main_mode="auto", own_main_file=None):
     """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru."""
-    header_file = select_header_file(header_file)
-    functions = extract_function_from_header(header_file)
-    target_function = select_target_function(functions, function_name)
-    
+    header_file, target_function, functions = select_and_validate_function(header_file, function_name)
+
     # Extrahujeme adresář z hlavičkového souboru
     directory = os.path.dirname(header_file)
     
     # Vybereme odpovídající .c soubor
-    src_file = select_source_file(directory, src_file)
-    
-    # Zkontrolujeme, zda .c soubor obsahuje funkci
-    while not check_function_in_file(src_file, target_function):
-        src_file = select_source_file(directory, src_file)
+    src_file = select_and_validate_source_file(directory, src_file, target_function)
 
-    # Generování `generated_main.c`
-    generate_main(target_function, functions[target_function], header_file)
-    log_info(f"\nGenerování `generated_main.c` dokončeno pro funkci `{target_function}` ze souboru `{header_file}`.")
+    # Generování `generated_main.c` souboru
+    generate_main_file(target_function, functions, header_file, main_mode, own_main_file, directory)
 
-    # Kompilace
-    log_info("\n Kompilace `generated_main.c`...")
-    src_dir = os.path.dirname(src_file)
-    binary_file = ""
-    if architecture == "arm":
-        binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
-    elif architecture == "riscv":
-        binary_file = os.path.join(BUILD_DIR, f"binary_RISCV_{target_function}.out")
-    else:
-        binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
 
-    compile_binary(binary_file=binary_file, src_file=src_file, src_dir=src_dir, platform=architecture)
-    log_info(f"Kompilace dokončena pro `{target_function}`.")
-    
+    # Kompilace a generování binárního souboru
+    binary_file = compile_and_generate_binary(src_file, target_function, architecture)
+
     if REMOVE_GENERATED_MAIN:
         delete_file(get_generated_main_path())
     
@@ -159,19 +143,13 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
 
 def prepare_klee(header_file=None, src_file=None, function_name=None, architecture="native"):
     """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru pro KLEE."""
-    header_file = select_header_file(header_file)
-    functions = extract_function_from_header(header_file)
-    target_function = select_target_function(functions, function_name)
+    header_file, target_function, functions = select_and_validate_function(header_file, function_name)
     
     # Extrahujeme adresář z hlavičkového souboru
     directory = os.path.dirname(header_file)
     
     # Vybereme odpovídající .c soubor
-    src_file = select_source_file(directory, src_file)
-    
-    # Zkontrolujeme, zda .c soubor obsahuje funkci
-    while not check_function_in_file(src_file, target_function):
-        src_file = select_source_file(directory, src_file)
+    src_file = select_and_validate_source_file(directory, src_file, target_function)
 
     params = functions[target_function]
     constant_params = []
@@ -185,7 +163,6 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
     print("Např.:")
     print("  - Pro řetězec zadejte: hello")
     print("  - Pro pole (např. int *): zadejte hodnoty oddělené mezerou: 5 6 7 8")
-
 
     for i, param in enumerate(params):
         user_input = input(f"Zadejte hodnotu pro parametr '{param}' (ENTER ponechá jako symbolický): ")
@@ -246,3 +223,67 @@ def parse_param_type(param_decl):
     if "*" in param_decl:
         return base_type + "*"
     return base_type
+
+def select_and_validate_function(header_file=None, function_name=None):
+    """Vybere hlavičkový soubor a ověří existenci funkce."""
+    header_file = select_header_file(header_file)
+    functions = extract_function_from_header(header_file)
+    target_function = select_target_function(functions, function_name)
+    return header_file, target_function, functions
+
+def select_and_validate_source_file(directory, src_file, target_function):
+    """Vybere odpovídající .c soubor a ověří, zda obsahuje požadovanou funkci."""
+    src_file = select_source_file(directory, src_file)
+    while not check_function_in_file(src_file, target_function):
+        src_file = select_source_file(directory, src_file)
+    return src_file
+
+def generate_main_file(target_function, functions, header_file, main_mode, own_main_file, directory):
+    """Generuje main soubor na základě módů."""
+    if main_mode == "auto":
+        generate_main(target_function, functions[target_function], header_file)
+    elif main_mode == "template":
+        generate_main_template(target_function, functions[target_function], header_file)
+        log_info("Template generated_main.c byl vygenerován. Upravte ho manuálně podle potřeby.")
+        input("\nPozastaveno: Upravte `generated_main.c` dle potřeby a stiskněte ENTER pro pokračování...")
+    elif main_mode == "own":
+        own_main_file = handle_own_main_file(own_main_file, directory)
+        set_generated_main_path(own_main_file)
+    else:
+        raise ValueError(f"Neplatný mód main generování: {main_mode}")    
+
+def handle_own_main_file(own_main_file, directory):
+    """Ošetří vlastní main soubor, pokud byl zadán."""
+    if not own_main_file or not os.path.exists(own_main_file):
+        log_info("Nebyl zadán platný vlastní main soubor.")
+        log_info("Vyberte vlastní main soubor (`*.c`) pro pokračování:")
+        own_main_file = fzf_select_file(".c")
+
+        while not own_main_file or not os.path.exists(own_main_file):
+            log_error("Chyba: Nevybral jsi platný .c soubor.")
+            own_main_file = fzf_select_file(".c")
+    
+    dest = os.path.join(directory, "generated_main.c")
+    # Ověříme, že nebudeme kopírovat soubor sám na sebe
+    if os.path.abspath(own_main_file) != os.path.abspath(dest):
+        shutil.copyfile(own_main_file, dest)
+        log_info(f"Váš vlastní main soubor `{own_main_file}` byl zkopírován jako `generated_main.c`.")
+    else:
+        log_info(f"Váš vlastní main soubor již je `generated_main.c`. Kopírování není potřeba.")
+    return dest
+
+def compile_and_generate_binary(src_file, target_function, architecture):
+    """Komplikuje soubor a generuje binární soubor."""
+    log_debug("\n Kompilace `generated_main.c`...")
+    src_dir = os.path.dirname(src_file)
+    binary_file = ""
+    if architecture == "arm":
+        binary_file = os.path.join(BUILD_DIR, f"binary_ARM_{target_function}.out")
+    elif architecture == "riscv":
+        binary_file = os.path.join(BUILD_DIR, f"binary_RISCV_{target_function}.out")
+    else:
+        binary_file = os.path.join(BUILD_DIR, f"binary_x86_{target_function}.out")
+
+    compile_binary(binary_file=binary_file, src_file=src_file, src_dir=src_dir, platform=architecture)
+    log_info(f"Kompilace dokončena pro `{target_function}`.")
+    return binary_file
