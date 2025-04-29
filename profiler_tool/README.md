@@ -99,6 +99,44 @@ python3 -m core.cli.main func-analysis -H headers.h -c source.c -f func_name [--
 
 ######  Instalace závislostí 
 
+# Instalace závislostí nutné pro základní funkčnost
+
+
+1. **Instalace GDB**
+
+    GDB je debugger pro ladění programů:
+
+    ```bash
+    sudo apt install gdb
+    gdb --version
+    ```
+
+2. **Instalace FZF (Fuzzy Finder)**
+
+    FZF je nástroj pro fuzzy hledání souborů a dalších dat:
+
+    ```bash
+    sudo apt install fzf
+    ```
+
+---
+
+# Vedlejší nástroje pro emulaci:
+
+1. **Instalace GDB multiarch**
+
+sudo apt install gdb-multiarch
+
+sudo add-apt-repository ppa:ubuntu-toolchain-r/test
+
+2. **Instalace GCC pro ARM linux**
+
+sudo apt install gcc-arm-linux-gnueabihf
+
+3. **Instalace GCC pro RISC-V linux**
+
+sudo apt install gcc-riscv64-linux-gnu
+
 
 # Návod pro instalaci Klee
 
@@ -349,41 +387,6 @@ Tento návod vám pomůže snadno nainstalovat QEMU na vaši distribuci Ubuntu a
 
 ---
 
-# Instalace dalších nástrojů
-
-1. **Instalace GDB**
-
-    GDB je debugger pro ladění programů:
-
-    ```bash
-    sudo apt install gdb
-    gdb --version
-    ```
-
-2. **Instalace FZF (Fuzzy Finder)**
-
-    FZF je nástroj pro fuzzy hledání souborů a dalších dat:
-
-    ```bash
-    sudo apt install fzf
-    ```
-
----
-
-3. **Instalace GDB multiarch**
-
-sudo apt install gdb-multiarch
-
-sudo add-apt-repository ppa:ubuntu-toolchain-r/test
-
-4. **Instalace GCC pro ARM linux**
-
-sudo apt install gcc-arm-linux-gnueabihf
-
-5. **Instalace GCC pro RISC-V linux**
-
-sudo apt install gcc-riscv64-linux-gnu
-
 # Instalace rozšíření pro Visual Studio Code
 
 1. **Instalace Node.js a npm**
@@ -419,6 +422,9 @@ sudo apt install gcc-riscv64-linux-gnu
 
 Tímto způsobem máte připravené všechny potřebné nástroje pro vývoj a testování.
 
+3. **Přidání WSL rozšíření**
+
+Ve Visual Studio Code otevřete panel rozšíření kliknutím na ikonu Extensions (čtvereček se čtyřmi rohy) v levém postranním panelu. Do vyhledávacího pole zadejte "WSL" a nainstalujte rozšíření s názvem "Remote - WSL" od Microsoftu. Po úspěšné instalaci se v levém dolním rohu editoru objeví zelená ikona s nápisem ">< WSL", pomocí které se můžete připojit k vaší lokální distribuci WSL.
 
 # Nainstalovat když se chce zkompilovat clang (klee) pro platformu arm
 sudo apt-get install gcc-arm-linux-gnueabi

@@ -1,6 +1,7 @@
 import os
 import subprocess
 from config import log_info, log_error
+from config import LOOKOUT_DIR
 
 
 def get_directory_from_user(current_directory):
@@ -26,7 +27,7 @@ def get_directory_from_user(current_directory):
                     return current_directory
     return current_directory
 
-def fzf_select_files(extension, directory="."):
+def fzf_select_files(extension, directory=LOOKOUT_DIR):
     """Vybere pomocí fzf jeden nebo více souborů s danou příponou v daném adresáři."""
     directory = get_directory_from_user(directory)  
     try:
@@ -38,7 +39,7 @@ def fzf_select_files(extension, directory="."):
         file_paths = input(f"Zadej cesty k {extension} souborům (oddělené mezerou): ").strip().split()
         return [f for f in file_paths if os.path.exists(f)]
 
-def fzf_select_file(extension, directory="."):
+def fzf_select_file(extension, directory=LOOKOUT_DIR):
     """Vybere pomocí fzf jeden soubor s danou příponou v daném adresáři."""
     directory = get_directory_from_user(directory)  
     try:

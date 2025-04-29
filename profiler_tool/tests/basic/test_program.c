@@ -148,7 +148,7 @@ int logic_ARM(int x) {
     }
 } 
 
-/*
+
 #ifndef MAIN_DEFINED
 int main(int argc, char *argv[]) {
     int a = 10, b = 2;
@@ -163,4 +163,4 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
-#endif*/
+#endif

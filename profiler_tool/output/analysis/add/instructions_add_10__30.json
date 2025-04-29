@@ -1,0 +1,11 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/basic/helper1.c",
+    "function": "add",
+    "params": "10 -30",
+    "total_instructions": 10,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/helper1.c:3": 5,
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/helper1.c:4": 3,
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/helper1.c:5": 2
+    }
+}
