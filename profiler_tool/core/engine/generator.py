@@ -1,6 +1,7 @@
 import os
 from config import DEFAULT_GENERATED_MAIN, DEFAULT_GENERATED_MAIN_KLEE
 from config import log_debug
+from config import KLEE_SYMBOLIC_SIZE
 
 # Skript pro generování hlavních souborů (`generated_main.c`, `generated_main_klee.c`, `generated_main_arm.c`)
 # pro různé typy kompilací a analýz (KLEE, ARM bare-metal, x86/ARM).
@@ -66,7 +67,7 @@ def generate_main_klee(target_function, params_with_const, header_file):
         f.write('#include <string.h>\n\n')
         f.write(f'#include "{header_filename}"\n\n')
         f.write('// Velikost symbolických polí/řetězců\n')
-        f.write('#define SIZE 10\n\n')
+        f.write(f'#define SIZE {KLEE_SYMBOLIC_SIZE}\n\n')
         f.write("int main() {\n")
 
         if has_void:
@@ -240,19 +241,22 @@ def generate_param_code(params, bm=False):
                 arg_idx = f"argv[{i+1}]"
 
                 if any(t in param_type for t in ("int", "float", "double", "unsigned")):
-                    code += f"    int {count_var} = 1;\n"
+                    convert_func = "atoi" if "int" in param_type or "unsigned" in param_type else "atof"
                     code += f"    char *{tmp_var} = {arg_idx};\n"
-                    code += f"    for (int i = 0; {tmp_var}[i]; ++i) if ({tmp_var}[i] == ' ') {count_var}++;\n"
+                    code += f"    if ({tmp_var}[0] == '[') {tmp_var}++;\n"
+                    code += f"    size_t len_{i+1} = strlen({tmp_var});\n"
+                    code += f"    if ({tmp_var}[len_{i+1} - 1] == ']') {tmp_var}[len_{i+1} - 1] = '\\0';\n"
+                    code += f"    int {count_var} = 1;\n"
+                    code += f"    for (int j = 0; {tmp_var}[j]; ++j) if ({tmp_var}[j] == ',') {count_var}++;\n"
                     code += f"    {param_type} {num_var}[{count_var}];\n"
                     code += f"    int {idx_var} = 0;\n"
-                    code += f"    char *{token_var} = strtok({arg_idx}, \" \");\n"
+                    code += f"    char *{token_var} = strtok({tmp_var}, \",\");\n"
                     code += f"    while ({token_var} != NULL && {idx_var} < {count_var}) {{\n"
-                    convert_func = "atoi" if "int" in param_type or "unsigned" in param_type else "atof"
+                    code += f"        while (*{token_var} == ' ') ++{token_var};\n"  # ořež začáteční mezery
                     code += f"        {num_var}[{idx_var}++] = {convert_func}({token_var});\n"
-                    code += f"        {token_var} = strtok(NULL, \" \");\n"
+                    code += f"        {token_var} = strtok(NULL, \",\");\n"
                     code += f"    }}\n"
                     converted_params.append(num_var)
-                
                 elif "char" in param_type:
                     converted_params.append(arg_idx)
 

@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c",
+    "platform": "native",
     "function": "recurse",
     "params": "10",
     "total_instructions": 6596,

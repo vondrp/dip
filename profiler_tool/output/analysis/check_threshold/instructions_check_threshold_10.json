@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c",
+    "platform": "native",
     "function": "check_threshold",
     "params": "10",
     "total_instructions": 667,

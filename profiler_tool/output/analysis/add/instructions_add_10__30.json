@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/basic/helper1.c",
+    "platform": "native",
     "function": "add",
     "params": "10 -30",
     "total_instructions": 10,

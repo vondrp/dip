@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c",
+    "platform": "native",
     "function": "match",
     "params": "test 'neni tam tes'",
     "total_instructions": 910,

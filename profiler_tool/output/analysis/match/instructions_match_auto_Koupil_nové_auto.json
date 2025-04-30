@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c",
+    "platform": "native",
     "function": "match",
     "params": "auto 'Koupil nov\u00e9 auto'",
     "total_instructions": 1133,

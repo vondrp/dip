@@ -10,6 +10,10 @@ Tento nástroj umožňuje analyzovat části C kódu pomocí emulace (`trace-ana
 CLI nástroj se spouští následujícím způsobem:
 
 ```
+./profiler_tool <příkaz> [parametry]
+
+nebo
+
 python3 -m core.cli.main <příkaz> [parametry]
 ```
 
@@ -28,7 +32,7 @@ Vybere a přeloží zadanou funkci ze zdrojových souborů. Volitelně umožňuj
 
 #### Použití:
 ```
-python3 -m core.cli.main prepare-function -H headers.h -c source.c -f func_name [--klee]
+./profiler_tool prepare-function -H headers.h -c source.c -f func_name [--klee]
 ```
 
 # Parametry:
@@ -57,7 +61,7 @@ Spustí předkompilovanou binárku se vstupy a analyzuje trace.log.
 Porovná více běhů na základě výsledných JSON výstupů.
 
 ```
-python3 -m core.cli.main compare-runs -d slozka_s_jsony [-f file1 file2 ...]
+./profiler_tool compare-runs -d slozka_s_jsony [-f file1 file2 ...]
 ```
 
 # Parametry:
@@ -72,7 +76,7 @@ Spustí pouze KLEE testování na konkrétní funkci bez trace analýzy.
 
 # Použití:
 ```
-python3 -m core.cli.main prepare-klee -H headers.h -c source.c -f func_name
+./profiler_tool prepare-klee -H headers.h -c source.c -f func_name
 ```
 
 # Parametry:
@@ -86,7 +90,7 @@ Kombinuje: výběr funkce → přeložení → spuštění → výstup ve formá
 
 # Použití:
 ```
-python3 -m core.cli.main func-analysis -H headers.h -c source.c -f func_name [--result-file output.json]4
+./profiler_tool func-analysis -H headers.h -c source.c -f func_name [--result-file output.json]4
 ```
 
 # Parametry:
@@ -96,6 +100,30 @@ python3 -m core.cli.main func-analysis -H headers.h -c source.c -f func_name [--
 --result-file – Výstupní soubor s JSON výsledkem
 --main-mode	– Způsob generování main.c (auto, template, own)
 --own-main-file	– Cesta k vlastnímu main.c souboru (jen pro own)
+
+######  Použití během běhu
+
+Při spouštění programu budete vyzváni k zadání sad vstupních parametrů:
+```
+[INFO] 
+ Zadej sady parametrů pro spuštění (každou sadu potvrď Enterem).
+[INFO] Dvakrát Enter (prázdný řádek) ukončí zadávání.
+[INFO] Pokud funkce nemá žádné parametry, jen stiskni Enter.
+[INPUT] Parametry:
+```
+
+Každá sada odpovídá jednomu spuštění cílové funkce s konkrétními parametry. Platí následující pravidla:
+
+- **Pole (např. `int*`, `float*`, `double*`)** zadávejte jako textový řetězec s hranatými závorkami a čárkami – tedy **v uvozovkách**:  
+  `"[66, 16777216, 64, 7, 6, 5, 4, 2, 0, -1]"`
+
+- **Řetězce (`char*`)** zadávejte v uvozovkách (zejména pokud obsahují mezery):  
+  `"nějaký text s mezerami"`
+
+- **Základní typy (`int`, `unsigned`, `char`, `float`, `double`)** můžete zadávat bez nebo s uvozovkami:  
+  `42`, `"42"`, `'a'`, `3.14`, `"3.14"`
+
+Každý řádek představuje jednu sadu parametrů. Pro ukončení zadávání stiskněte dvakrát Enter.
 
 ######  Instalace závislostí 
 

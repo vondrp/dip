@@ -154,15 +154,17 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
     params = functions[target_function]
     constant_params = []
 
-    print("\n Tato funkce má následující parametry:")
+    log_info("\n Tato funkce má následující parametry:")
     for i, p in enumerate(params):
         print(f"  [{i}] {p}")
         
-    print("\nChcete některé parametry zadat jako *konstanty* (namísto symbolických)?")
-    print("Zadáním konstanty lze zjednodušit analýzu a předejít problémům při zpracování vstupů (např. u řetězců nebo struktur).")
-    print("Např.:")
-    print("  - Pro řetězec zadejte: hello")
-    print("  - Pro pole (např. int *): zadejte hodnoty oddělené mezerou: 5 6 7 8")
+    log_info("\nChcete některé parametry zadat jako *konstanty* (namísto symbolických)?")
+    log_info("Zadáním konstanty lze zjednodušit analýzu a předejít problémům při práci s pamětí nebo vstupy.")
+    log_info("V některých případech (např. při alokaci nebo práci s řetězci) je zadání konstanty nutné nebo výrazně spolehlivější.")
+    log_info("Příklady zadání:")
+    log_info("  - Řetězec: hello")
+    log_info("  - Pole (např. int *): 5 6 7 8")
+
 
     for i, param in enumerate(params):
         user_input = input(f"Zadejte hodnotu pro parametr '{param}' (ENTER ponechá jako symbolický): ")

@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c",
+    "platform": "native",
     "function": "matrix_max",
     "params": "3 2 '1.0 2.0 3.0 4.0 5.0 6.0'",
     "total_instructions": 149,

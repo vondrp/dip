@@ -54,7 +54,6 @@ def get_runtime_function_address(trace_file, function_name):
                 # Upravíme regulární výraz pro RISC-V: ignorujeme 'ra' a získáme adresu
                 if ACTIVE_ARCHITECTURE == "riscv":                    
                     match = re.search(rf"({call_instruction_regex})\s+([a-zA-Z0-9,]+)?\s*(0x[0-9a-fA-F]+)\s+<{re.escape(function_name)}>", line)
-                    #match = re.search(rf"({call_instruction_regex})\s+([0x[0-9a-fA-F]+]+)\s+<" + re.escape(function_name) + ">", line)
                 else:
                     match = re.search(rf"({call_instruction_regex})\s+(0x[0-9a-fA-F]+)\s+<{re.escape(function_name)}>", line)
 
@@ -257,6 +256,7 @@ def save_json(source_line_counts, crash_detected, crash_last_executed_line, json
     
     json_data = {
         "source_file": source_file,
+        "platform": ACTIVE_ARCHITECTURE,
         "function": function_name,
         "params": params,
         "total_instructions": total_instructions,

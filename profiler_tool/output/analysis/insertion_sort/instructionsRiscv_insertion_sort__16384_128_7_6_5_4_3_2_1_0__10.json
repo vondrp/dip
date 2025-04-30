@@ -1,0 +1,16 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c",
+    "platform": "riscv",
+    "function": "insertion_sort",
+    "params": "'[16384, 128, 7, 6, 5, 4, 3, 2, 1, 0]' 10",
+    "total_instructions": 1733,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:41": 7,
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:42": 6,
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:44": 98,
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:45": 1424,
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:47": 77,
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:48": 116,
+        "/home/vondrp/programs/dip/profiler_tool/tests/sort/sort.c:49": 5
+    }
+}

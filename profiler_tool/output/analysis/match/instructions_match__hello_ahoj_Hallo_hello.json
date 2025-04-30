@@ -1,5 +1,6 @@
 {
     "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c",
+    "platform": "native",
     "function": "match",
     "params": "^hello 'ahoj Hallo hello'",
     "total_instructions": 55,
