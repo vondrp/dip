@@ -17,8 +17,8 @@ GDB_SCRIPT_ARM = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace_arm.py")
 GDB_SCRIPT_RISCV = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace_riscv.py")
 GDB_SCRIPT_ARM_BM = os.path.join(BASE_DIR, "core", "gdb", "gdb_trace_bare_arm.py")
 
-BM_STARTUP = os.path.join(BASE_DIR, "core", "bm_startup", "startup.s")
-BM_STARTUP_O = os.path.join(BASE_DIR, "core", "bm_startup", "startup.o")
-BM_LINKER = os.path.join(BASE_DIR, "core", "bm_startup", "linker.ld")
-
 LOOKOUT_DIR = os.path.join(BASE_DIR, "tests")
+
+# nepoužívané - zanecháno pro možná budoucí rozšíření
+BM_STARTUP = os.path.join(BASE_DIR, "core", "bm_startup", "startup.s")
+BM_LINKER = os.path.join(BASE_DIR, "core", "bm_startup", "linker.ld")
