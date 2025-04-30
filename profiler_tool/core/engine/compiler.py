@@ -136,14 +136,14 @@ def compile_binary(binary_file, src_file, src_dir, platform="arm"):
     # Výběr překladače a specifických flagů dle platformy
     if platform == "arm":
         compiler = "arm-linux-gnueabihf-gcc"
-        flags = ["-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer"]
+        flags = ["-DMAIN_DEFINED", "-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer"]
     elif platform == "riscv":
         compiler = "riscv64-linux-gnu-gcc"
-        flags = ["-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer"]
+        flags = ["-DMAIN_DEFINED", "-fno-pie", "-no-pie", "-g", "-static", "-fno-omit-frame-pointer"]
         #flags = ["-g", "-static", "-march=rv64imac", "-mabi=lp64"]
     elif platform == "native":
         compiler = "gcc"
-        flags = ["-g", "-fno-omit-frame-pointer"]
+        flags = ["-DMAIN_DEFINED", "-g", "-fno-omit-frame-pointer"]
     else:
         raise ValueError(f"Neznámá platforma: {platform}")
 

@@ -169,7 +169,6 @@ def generate_main_header_includes(header_filename, bm=False):
     includes = ""
     if not bm:
         includes += '#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n'
-    includes += '#define MAIN_DEFINED\n'
     includes += f'#include "{header_filename}"\n\n'
     return includes
 
