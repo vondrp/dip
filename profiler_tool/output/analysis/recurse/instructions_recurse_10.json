@@ -1,0 +1,13 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c",
+    "function": "recurse",
+    "params": "10",
+    "total_instructions": 6596,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46": 5,
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47": 2,
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48": 659,
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49": 5927,
+        "/home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50": 3
+    }
+}

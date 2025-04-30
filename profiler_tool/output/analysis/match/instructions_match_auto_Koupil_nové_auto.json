@@ -1,0 +1,14 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c",
+    "function": "match",
+    "params": "auto 'Koupil nov\u00e9 auto'",
+    "total_instructions": 1133,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34": 6,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35": 4,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:38": 1000,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:40": 120,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:41": 1,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42": 2
+    }
+}

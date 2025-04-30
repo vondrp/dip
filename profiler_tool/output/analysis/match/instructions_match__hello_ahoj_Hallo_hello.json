@@ -1,0 +1,12 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c",
+    "function": "match",
+    "params": "^hello 'ahoj Hallo hello'",
+    "total_instructions": 55,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34": 6,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35": 4,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:36": 43,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42": 2
+    }
+}

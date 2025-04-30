@@ -1,0 +1,14 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c",
+    "function": "match",
+    "params": "' ' 'test druhe'",
+    "total_instructions": 716,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34": 6,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35": 4,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:38": 625,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:40": 78,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:41": 1,
+        "/home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42": 2
+    }
+}

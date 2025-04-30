@@ -1,0 +1,1425 @@
+TEXT_BASE 0x0
+main, 0x107fa: ldr	r3, [r7, #4]
+main, 0x107fc: cmp	r3, #1
+main, 0x107fe: bgt.n	0x10816 <main+38>
+main, 0x10816: movw	r0, #64572	; 0xfc3c
+main, 0x1081a: movt	r0, #4
+[CALL] main -> <puts>
+main, 0x1081e: bl	0x19794 <puts>
+puts, 0x19794: stmdb	sp!, {r3, r4, r5, r6, r7, r8, r9, lr}
+puts, 0x19798: mov	r7, r0
+puts, 0x1979a: ldr	r6, [pc, #300]	; (0x198c8 <puts+308>)
+[CALL] puts -> <strlen>
+puts, 0x1979c: bl	0x24200 <strlen>
+strlen, 0x24200: pld	[r0]
+strlen, 0x24204: strd	r4, r5, [sp, #-8]!
+strlen, 0x24208: bic.w	r1, r0, #7
+strlen, 0x2420c: mvn.w	r12, #0
+strlen, 0x24210: ands.w	r4, r0, #7
+strlen, 0x24214: pld	[r1, #32]
+strlen, 0x24218: bne.w	0x242ae <strlen+174>
+strlen, 0x242ae: ldrd	r2, r3, [r1]
+strlen, 0x242b2: and.w	r5, r4, #3
+strlen, 0x242b6: rsb	r0, r4, #0
+strlen, 0x242ba: mov.w	r5, r5, lsl #3
+strlen, 0x242be: tst.w	r4, #4
+strlen, 0x242c2: pld	[r1, #64]	; 0x40
+strlen, 0x242c6: lsl.w	r5, r12, r5
+strlen, 0x242ca: orn	r2, r2, r5
+strlen, 0x242ce: itt	ne
+strlen, 0x242d0: ornne	r3, r3, r5
+strlen, 0x242d4: movne	r2, r12
+strlen, 0x242d6: mov.w	r4, #0
+strlen, 0x242da: b.n	0x24230 <strlen+48>
+strlen, 0x24230: uadd8	r2, r2, r12
+strlen, 0x24234: sel	r2, r4, r12
+strlen, 0x24238: uadd8	r3, r3, r12
+strlen, 0x2423c: sel	r3, r2, r12
+strlen, 0x24240: cbnz	r3, 0x24296 <strlen+150>
+strlen, 0x24242: ldrd	r2, r3, [r1, #8]
+strlen, 0x24246: uadd8	r2, r2, r12
+strlen, 0x2424a: add.w	r0, r0, #8
+strlen, 0x2424e: sel	r2, r4, r12
+strlen, 0x24252: uadd8	r3, r3, r12
+strlen, 0x24256: sel	r3, r2, r12
+strlen, 0x2425a: cbnz	r3, 0x24296 <strlen+150>
+strlen, 0x2425c: ldrd	r2, r3, [r1, #16]
+strlen, 0x24260: uadd8	r2, r2, r12
+strlen, 0x24264: add.w	r0, r0, #8
+strlen, 0x24268: sel	r2, r4, r12
+strlen, 0x2426c: uadd8	r3, r3, r12
+strlen, 0x24270: sel	r3, r2, r12
+strlen, 0x24274: cbnz	r3, 0x24296 <strlen+150>
+strlen, 0x24276: ldrd	r2, r3, [r1, #24]
+strlen, 0x2427a: add.w	r1, r1, #32
+strlen, 0x2427e: uadd8	r2, r2, r12
+strlen, 0x24282: add.w	r0, r0, #8
+strlen, 0x24286: sel	r2, r4, r12
+strlen, 0x2428a: uadd8	r3, r3, r12
+strlen, 0x2428e: sel	r3, r2, r12
+strlen, 0x24292: cmp	r3, #0
+strlen, 0x24294: beq.n	0x24224 <strlen+36>
+strlen, 0x24224: ldrd	r2, r3, [r1]
+strlen, 0x24228: pld	[r1, #64]	; 0x40
+strlen, 0x2422c: add.w	r0, r0, #8
+strlen, 0x24230: uadd8	r2, r2, r12
+strlen, 0x24234: sel	r2, r4, r12
+strlen, 0x24238: uadd8	r3, r3, r12
+strlen, 0x2423c: sel	r3, r2, r12
+strlen, 0x24240: cbnz	r3, 0x24296 <strlen+150>
+strlen, 0x24296: cmp	r2, #0
+strlen, 0x24298: itt	eq
+strlen, 0x2429a: addeq	r0, #4
+strlen, 0x2429c: moveq	r2, r3
+strlen, 0x2429e: rev	r2, r2
+strlen, 0x242a0: clz	r2, r2
+strlen, 0x242a4: ldrd	r4, r5, [sp], #8
+strlen, 0x242a8: add.w	r0, r0, r2, lsr #3
+strlen, 0x242ac: bx	lr
+puts, 0x197a0: ldr	r3, [pc, #296]	; (0x198cc <puts+312>)
+puts, 0x197a2: add	r6, pc
+puts, 0x197a4: mov	r4, r0
+puts, 0x197a6: ldr.w	r8, [r6, r3]
+puts, 0x197aa: ldr.w	r5, [r8]
+puts, 0x197ae: ldr	r3, [r5, #0]
+puts, 0x197b0: lsls	r1, r3, #16
+puts, 0x197b2: bmi.n	0x197fa <puts+102>
+puts, 0x197b4: ldr	r3, [r5, #72]	; 0x48
+puts, 0x197b6: mrc	15, 0, r9, cr13, cr0, {3}
+puts, 0x197ba: sub.w	r9, r9, #1408	; 0x580
+puts, 0x197be: ldr	r2, [r3, #8]
+puts, 0x197c0: cmp	r2, r9
+puts, 0x197c2: beq.n	0x19872 <puts+222>
+puts, 0x197c4: movs	r2, #1
+puts, 0x197c6: ldrex	r1, [r3]
+puts, 0x197ca: cmp	r1, #0
+puts, 0x197cc: bne.n	0x197da <puts+70>
+puts, 0x197ce: strex	r0, r2, [r3]
+puts, 0x197d2: cmp	r0, #0
+puts, 0x197d4: bne.n	0x197c6 <puts+50>
+puts, 0x197d6: dmb	ish
+puts, 0x197da: bne.n	0x1988c <puts+248>
+puts, 0x197dc: ldr	r3, [r5, #72]	; 0x48
+puts, 0x197de: ldr.w	r0, [r8]
+puts, 0x197e2: str.w	r9, [r3, #8]
+puts, 0x197e6: ldr	r2, [r3, #4]
+puts, 0x197e8: adds	r2, #1
+puts, 0x197ea: str	r2, [r3, #4]
+puts, 0x197ec: ldr	r3, [r0, #108]	; 0x6c
+puts, 0x197ee: cbz	r3, 0x19802 <puts+110>
+puts, 0x19802: mov.w	r3, #4294967295	; 0xffffffff
+puts, 0x19806: str	r3, [r0, #108]	; 0x6c
+puts, 0x19808: ldr	r3, [pc, #196]	; (0x198d0 <puts+316>)
+puts, 0x1980a: ldr	r2, [r6, r3]
+puts, 0x1980c: ldr	r3, [pc, #196]	; (0x198d4 <puts+320>)
+puts, 0x1980e: ldr	r3, [r6, r3]
+puts, 0x19810: ldr.w	r6, [r0, #152]	; 0x98
+puts, 0x19814: subs	r2, r2, r3
+puts, 0x19816: subs	r3, r6, r3
+puts, 0x19818: cmp	r2, r3
+[CALL] puts -> <puts+226>
+puts, 0x1981a: bls.n	0x19876 <puts+226>
+puts, 0x1981c: ldr	r3, [r6, #28]
+puts, 0x1981e: mov	r1, r7
+puts, 0x19820: mov	r2, r4
+[CALL] puts -> r3
+puts, 0x19822: blx	r3
+_IO_new_file_xsputn, 0x1c0e4: stmdb	sp!, {r4, r5, r6, r7, r8, r9, lr}
+_IO_new_file_xsputn, 0x1c0e8: mov	r4, r2
+_IO_new_file_xsputn, 0x1c0ea: ldr.w	r8, [pc, #268]	; 0x1c1f8 <_IO_new_file_xsputn+276>
+_IO_new_file_xsputn, 0x1c0ee: sub	sp, #12
+_IO_new_file_xsputn, 0x1c0f0: add	r8, pc
+_IO_new_file_xsputn, 0x1c0f2: cbz	r2, 0x1c15a <_IO_new_file_xsputn+118>
+_IO_new_file_xsputn, 0x1c0f4: mov	r5, r0
+_IO_new_file_xsputn, 0x1c0f6: mov	r7, r1
+_IO_new_file_xsputn, 0x1c0f8: ldr	r0, [r0, #20]
+_IO_new_file_xsputn, 0x1c0fa: ldr	r3, [r5, #0]
+_IO_new_file_xsputn, 0x1c0fc: and.w	r3, r3, #2560	; 0xa00
+_IO_new_file_xsputn, 0x1c100: cmp.w	r3, #2560	; 0xa00
+_IO_new_file_xsputn, 0x1c104: beq.n	0x1c162 <_IO_new_file_xsputn+126>
+_IO_new_file_xsputn, 0x1c106: ldr	r6, [r5, #24]
+_IO_new_file_xsputn, 0x1c108: cmp	r6, r0
+_IO_new_file_xsputn, 0x1c10a: it	hi
+_IO_new_file_xsputn, 0x1c10c: subhi	r6, r6, r0
+_IO_new_file_xsputn, 0x1c10e: bhi.n	0x1c16e <_IO_new_file_xsputn+138>
+_IO_new_file_xsputn, 0x1c110: mov	r6, r4
+_IO_new_file_xsputn, 0x1c112: ldr	r3, [pc, #232]	; (0x1c1fc <_IO_new_file_xsputn+280>)
+_IO_new_file_xsputn, 0x1c114: ldr.w	r1, [r5, #152]	; 0x98
+_IO_new_file_xsputn, 0x1c118: ldr.w	r2, [r8, r3]
+_IO_new_file_xsputn, 0x1c11c: ldr	r3, [pc, #224]	; (0x1c200 <_IO_new_file_xsputn+284>)
+_IO_new_file_xsputn, 0x1c11e: ldr.w	r3, [r8, r3]
+_IO_new_file_xsputn, 0x1c122: subs	r2, r2, r3
+_IO_new_file_xsputn, 0x1c124: subs	r3, r1, r3
+_IO_new_file_xsputn, 0x1c126: cmp	r2, r3
+[CALL] _IO_new_file_xsputn -> <_IO_new_file_xsputn+260>
+_IO_new_file_xsputn, 0x1c128: bls.n	0x1c1e8 <_IO_new_file_xsputn+260>
+_IO_new_file_xsputn, 0x1c12a: ldr	r3, [r1, #12]
+_IO_new_file_xsputn, 0x1c12c: mov	r0, r5
+_IO_new_file_xsputn, 0x1c12e: mov.w	r1, #4294967295	; 0xffffffff
+[CALL] _IO_new_file_xsputn -> r3
+_IO_new_file_xsputn, 0x1c132: blx	r3
+_IO_new_file_overflow, 0x1c8dc: ldr	r3, [r0, #0]
+_IO_new_file_overflow, 0x1c8de: push	{r4, r5, r6, lr}
+_IO_new_file_overflow, 0x1c8e0: mov	r4, r0
+_IO_new_file_overflow, 0x1c8e2: lsls	r0, r3, #28
+_IO_new_file_overflow, 0x1c8e4: bmi.n	0x1c9e0 <_IO_new_file_overflow+260>
+_IO_new_file_overflow, 0x1c8e6: mov	r5, r1
+_IO_new_file_overflow, 0x1c8e8: ldr	r2, [r4, #16]
+_IO_new_file_overflow, 0x1c8ea: lsls	r1, r3, #20
+_IO_new_file_overflow, 0x1c8ec: bmi.n	0x1c948 <_IO_new_file_overflow+108>
+_IO_new_file_overflow, 0x1c8ee: cmp	r2, #0
+_IO_new_file_overflow, 0x1c8f0: beq.n	0x1c9ae <_IO_new_file_overflow+210>
+_IO_new_file_overflow, 0x1c9ae: mov	r0, r4
+[CALL] _IO_new_file_overflow -> <_IO_doallocbuf>
+_IO_new_file_overflow, 0x1c9b0: bl	0x1d2cc <_IO_doallocbuf>
+_IO_new_file_overflow, 0x1c9b4: ldr	r2, [r4, #28]
+_IO_new_file_overflow, 0x1c9b6: ldr	r3, [r4, #0]
+_IO_new_file_overflow, 0x1c9b8: str	r2, [r4, #12]
+_IO_new_file_overflow, 0x1c9ba: strd	r2, r2, [r4, #4]
+_IO_new_file_overflow, 0x1c9be: b.n	0x1c8f4 <_IO_new_file_overflow+24>
+_IO_new_file_overflow, 0x1c8f4: lsls	r6, r3, #23
+_IO_new_file_overflow, 0x1c8f6: bmi.n	0x1c9c0 <_IO_new_file_overflow+228>
+_IO_new_file_overflow, 0x1c8f8: ldr	r0, [r4, #32]
+_IO_new_file_overflow, 0x1c8fa: cmp	r0, r2
+_IO_new_file_overflow, 0x1c8fc: itet	eq
+_IO_new_file_overflow, 0x1c8fe: ldreq	r2, [r4, #28]
+_IO_new_file_overflow, 0x1c900: ldrne	r1, [r4, #8]
+_IO_new_file_overflow, 0x1c902: moveq	r1, r2
+_IO_new_file_overflow, 0x1c904: str	r1, [r4, #4]
+_IO_new_file_overflow, 0x1c906: str	r1, [r4, #12]
+_IO_new_file_overflow, 0x1c908: orr.w	r1, r3, #2048	; 0x800
+_IO_new_file_overflow, 0x1c90c: str	r1, [r4, #0]
+_IO_new_file_overflow, 0x1c90e: ldr	r1, [r4, #108]	; 0x6c
+_IO_new_file_overflow, 0x1c910: it	eq
+_IO_new_file_overflow, 0x1c912: streq	r2, [r4, #8]
+_IO_new_file_overflow, 0x1c914: strd	r2, r0, [r4, #20]
+_IO_new_file_overflow, 0x1c918: cmp	r1, #0
+_IO_new_file_overflow, 0x1c91a: str	r2, [r4, #16]
+[CALL] _IO_new_file_overflow -> <_IO_new_file_overflow+130>
+_IO_new_file_overflow, 0x1c91c: ble.n	0x1c95e <_IO_new_file_overflow+130>
+_IO_new_file_overflow, 0x1c95e: movw	r1, #514	; 0x202
+_IO_new_file_overflow, 0x1c962: tst	r3, r1
+_IO_new_file_overflow, 0x1c964: it	ne
+_IO_new_file_overflow, 0x1c966: strne	r2, [r4, #24]
+_IO_new_file_overflow, 0x1c968: b.n	0x1c91e <_IO_new_file_overflow+66>
+_IO_new_file_overflow, 0x1c91e: adds	r0, r5, #1
+_IO_new_file_overflow, 0x1c920: beq.n	0x1c950 <_IO_new_file_overflow+116>
+_IO_new_file_overflow, 0x1c950: ldr	r1, [r4, #16]
+_IO_new_file_overflow, 0x1c952: mov	r0, r4
+_IO_new_file_overflow, 0x1c954: ldmia.w	sp!, {r4, r5, r6, lr}
+_IO_new_file_overflow, 0x1c958: subs	r2, r2, r1
+_IO_new_file_overflow, 0x1c95a: b.w	0x1c430 <_IO_new_do_write>
+_IO_new_do_write, 0x1c430: push	{r4, lr}
+_IO_new_do_write, 0x1c432: mov	r4, r2
+_IO_new_do_write, 0x1c434: cbnz	r2, 0x1c43a <_IO_new_do_write+10>
+_IO_new_do_write, 0x1c436: mov	r0, r2
+_IO_new_do_write, 0x1c438: pop	{r4, pc}
+_IO_new_file_xsputn, 0x1c134: adds	r3, r0, #1
+_IO_new_file_xsputn, 0x1c136: beq.n	0x1c1d4 <_IO_new_file_xsputn+240>
+_IO_new_file_xsputn, 0x1c138: ldrd	r3, r1, [r5, #28]
+_IO_new_file_xsputn, 0x1c13c: subs	r1, r1, r3
+_IO_new_file_xsputn, 0x1c13e: cmp	r1, #127	; 0x7f
+_IO_new_file_xsputn, 0x1c140: it	ls
+_IO_new_file_xsputn, 0x1c142: movls	r8, r6
+[CALL] _IO_new_file_xsputn -> <_IO_new_file_xsputn+108>
+_IO_new_file_xsputn, 0x1c144: bls.n	0x1c150 <_IO_new_file_xsputn+108>
+_IO_new_file_xsputn, 0x1c146: mov	r0, r6
+[CALL] _IO_new_file_xsputn -> <__aeabi_uidivmod>
+_IO_new_file_xsputn, 0x1c148: bl	0x4deb4 <__aeabi_uidivmod>
+_IO_new_file_xsputn, 0x1c14c: sub.w	r8, r6, r1
+_IO_new_file_xsputn, 0x1c150: cmp.w	r8, #0
+_IO_new_file_xsputn, 0x1c154: bne.n	0x1c1a8 <_IO_new_file_xsputn+196>
+_IO_new_file_xsputn, 0x1c156: cmp	r6, #0
+_IO_new_file_xsputn, 0x1c158: bne.n	0x1c1c2 <_IO_new_file_xsputn+222>
+_IO_new_file_xsputn, 0x1c1c2: add.w	r1, r7, r8
+_IO_new_file_xsputn, 0x1c1c6: mov	r0, r5
+_IO_new_file_xsputn, 0x1c1c8: mov	r2, r6
+[CALL] _IO_new_file_xsputn -> <_IO_default_xsputn>
+_IO_new_file_xsputn, 0x1c1ca: bl	0x1d394 <_IO_default_xsputn>
+_IO_new_file_xsputn, 0x1c1ce: subs	r0, r0, r6
+_IO_new_file_xsputn, 0x1c1d0: add	r0, r4
+_IO_new_file_xsputn, 0x1c1d2: b.n	0x1c194 <_IO_new_file_xsputn+176>
+_IO_new_file_xsputn, 0x1c194: add	sp, #12
+_IO_new_file_xsputn, 0x1c196: ldmia.w	sp!, {r4, r5, r6, r7, r8, r9, pc}
+puts, 0x19824: cmp	r4, r0
+puts, 0x19826: bne.n	0x197f4 <puts+96>
+puts, 0x19828: ldr.w	r0, [r8]
+puts, 0x1982c: ldrd	r3, r2, [r0, #20]
+puts, 0x19830: cmp	r3, r2
+puts, 0x19832: itttt	cc
+puts, 0x19834: addcc	r2, r3, #1
+puts, 0x19836: strcc	r2, [r0, #20]
+puts, 0x19838: movcc	r2, #10
+puts, 0x1983a: strbcc	r2, [r3, #0]
+puts, 0x1983c: bcs.n	0x19880 <puts+236>
+puts, 0x1983e: adds	r4, #1
+puts, 0x19840: ldr	r3, [r5, #0]
+puts, 0x19842: lsls	r2, r3, #16
+puts, 0x19844: bmi.n	0x19850 <puts+188>
+puts, 0x19846: ldr	r0, [r5, #72]	; 0x48
+puts, 0x19848: ldr	r3, [r0, #4]
+puts, 0x1984a: subs	r3, #1
+puts, 0x1984c: str	r3, [r0, #4]
+puts, 0x1984e: cbz	r3, 0x19856 <puts+194>
+puts, 0x19856: str	r3, [r0, #8]
+puts, 0x19858: dmb	ish
+puts, 0x1985c: ldrex	r2, [r0]
+puts, 0x19860: strex	r1, r3, [r0]
+puts, 0x19864: cmp	r1, #0
+puts, 0x19866: bne.n	0x1985c <puts+200>
+puts, 0x19868: cmp	r2, #1
+[CALL] puts -> <puts+188>
+puts, 0x1986a: ble.n	0x19850 <puts+188>
+puts, 0x19850: mov	r0, r4
+puts, 0x19852: ldmia.w	sp!, {r3, r4, r5, r6, r7, r8, r9, pc}
+main, 0x10822: ldr	r3, [r7, #0]
+main, 0x10824: adds	r3, #4
+main, 0x10826: ldr	r3, [r3, #0]
+main, 0x10828: mov	r0, r3
+[CALL] main -> <atoi>
+main, 0x1082a: bl	0x14488 <atoi>
+atoi, 0x14488: movs	r2, #10
+atoi, 0x1448a: movs	r1, #0
+atoi, 0x1448c: b.w	0x14d2c <strtol>
+strtol, 0x14d2c: push	{lr}
+strtol, 0x14d2e: mrc	15, 0, r12, cr13, cr0, {3}
+strtol, 0x14d32: ldr	r3, [pc, #24]	; (0x14d4c <strtol+32>)
+strtol, 0x14d34: sub	sp, #12
+strtol, 0x14d36: add	r3, pc
+strtol, 0x14d38: ldr	r3, [r3, #0]
+strtol, 0x14d3a: ldr.w	r3, [r12, r3]
+strtol, 0x14d3e: str	r3, [sp, #0]
+strtol, 0x14d40: movs	r3, #0
+[CALL] strtol -> <____strtol_l_internal>
+strtol, 0x14d42: bl	0x14d94 <____strtol_l_internal>
+strtol, 0x14d46: add	sp, #12
+strtol, 0x14d48: ldr.w	pc, [sp], #4
+main, 0x1082e: mov	r3, r0
+main, 0x10830: mov	r0, r3
+[CALL] main -> <recurse>
+main, 0x10832: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x10598: ldr	r1, [r7, #4]
+recurse, 0x1059a: movw	r0, #64448	; 0xfbc0
+recurse, 0x1059e: movt	r0, #4
+[CALL] recurse -> <printf>
+recurse, 0x105a2: bl	0x155bc <printf>
+printf, 0x155bc: push	{r0, r1, r2, r3}
+printf, 0x155be: ldr	r1, [pc, #80]	; (0x15610 <printf+84>)
+printf, 0x155c0: push	{lr}
+printf, 0x155c2: ldr	r3, [pc, #80]	; (0x15614 <printf+88>)
+printf, 0x155c4: add	r1, pc
+printf, 0x155c6: sub	sp, #12
+printf, 0x155c8: add	r2, sp, #16
+printf, 0x155ca: ldr	r0, [pc, #76]	; (0x15618 <printf+92>)
+printf, 0x155cc: ldr.w	r12, [pc, #76]	; 0x1561c <printf+96>
+printf, 0x155d0: ldr	r3, [r1, r3]
+printf, 0x155d2: add	r0, pc
+printf, 0x155d4: ldr.w	r1, [r2], #4
+printf, 0x155d8: ldr	r3, [r3, #0]
+printf, 0x155da: str	r3, [sp, #4]
+printf, 0x155dc: mov.w	r3, #0
+printf, 0x155e0: str	r2, [sp, #0]
+printf, 0x155e2: movs	r3, #0
+printf, 0x155e4: ldr.w	r0, [r0, r12]
+printf, 0x155e8: ldr	r0, [r0, #0]
+[CALL] printf -> <__vfprintf_internal>
+printf, 0x155ea: bl	0x17220 <__vfprintf_internal>
+printf, 0x155ee: ldr	r2, [pc, #48]	; (0x15620 <printf+100>)
+printf, 0x155f0: ldr	r3, [pc, #32]	; (0x15614 <printf+88>)
+printf, 0x155f2: add	r2, pc
+printf, 0x155f4: ldr	r3, [r2, r3]
+printf, 0x155f6: ldr	r2, [r3, #0]
+printf, 0x155f8: ldr	r3, [sp, #4]
+printf, 0x155fa: eors	r2, r3
+printf, 0x155fc: mov.w	r3, #0
+printf, 0x15600: bne.n	0x1560c <printf+80>
+printf, 0x15602: add	sp, #12
+printf, 0x15604: ldr.w	lr, [sp], #4
+printf, 0x15608: add	sp, #16
+printf, 0x1560a: bx	lr
+recurse, 0x105a6: ldr	r3, [r7, #4]
+recurse, 0x105a8: subs	r3, #1
+recurse, 0x105aa: mov	r0, r3
+[CALL] recurse -> <recurse>
+recurse, 0x105ac: bl	0x1058a <recurse>
+recurse, 0x1058a: push	{r7, lr}
+recurse, 0x1058c: sub	sp, #8
+recurse, 0x1058e: add	r7, sp, #0
+recurse, 0x10590: str	r0, [r7, #4]
+recurse, 0x10592: ldr	r3, [r7, #4]
+recurse, 0x10594: cmp	r3, #0
+recurse, 0x10596: beq.n	0x105b2 <recurse+40>
+recurse, 0x105b2: nop
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+recurse, 0x105b0: b.n	0x105b4 <recurse+42>
+recurse, 0x105b4: adds	r7, #8
+recurse, 0x105b6: mov	sp, r7
+recurse, 0x105b8: pop	{r7, pc}
+main, 0x10836: movs	r3, #0
+main, 0x10838: mov	r0, r3
+main, 0x1083a: adds	r7, #8
+main, 0x1083c: mov	sp, r7
+main, 0x1083e: pop	{r7, pc}
+[CALL] __libc_start_call_main -> <exit>
+__libc_start_call_main, 0x10bea: bl	0x14b64 <exit>
+exit, 0x14b64: ldr	r1, [pc, #12]	; (0x14b74 <exit+16>)
+exit, 0x14b66: push	{r3, lr}
+exit, 0x14b68: movs	r3, #1
+exit, 0x14b6a: add	r1, pc
+exit, 0x14b6c: mov	r2, r3
+[CALL] exit -> <__run_exit_handlers>
+exit, 0x14b6e: bl	0x14964 <__run_exit_handlers>
