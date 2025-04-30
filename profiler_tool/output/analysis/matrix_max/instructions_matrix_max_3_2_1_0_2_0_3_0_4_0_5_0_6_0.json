@@ -1,0 +1,16 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c",
+    "function": "matrix_max",
+    "params": "3 2 '1.0 2.0 3.0 4.0 5.0 6.0'",
+    "total_instructions": 149,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:21": 4,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:22": 14,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:25": 4,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:26": 49,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:27": 40,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:28": 35,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:30": 1,
+        "/home/vondrp/programs/dip/profiler_tool/tests/matrix_set/matrix.c:31": 2
+    }
+}

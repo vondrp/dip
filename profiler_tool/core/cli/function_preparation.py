@@ -254,6 +254,8 @@ def generate_main_file(target_function, functions, header_file, main_mode, own_m
 
 def handle_own_main_file(own_main_file, directory):
     """Ošetří vlastní main soubor, pokud byl zadán."""
+
+    log_debug(f"Own main file: {own_main_file} {not os.path.exists(own_main_file)} {not own_main_file} ")
     if not own_main_file or not os.path.exists(own_main_file):
         log_info("Nebyl zadán platný vlastní main soubor.")
         log_info("Vyberte vlastní main soubor (`*.c`) pro pokračování:")
