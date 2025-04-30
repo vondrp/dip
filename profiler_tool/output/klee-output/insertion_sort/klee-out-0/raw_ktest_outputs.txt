@@ -1,0 +1,20 @@
+=== test000001.ktest ===
+ktest file : '/home/vondrp/programs/dip/profiler_tool/output/klee-output/insertion_sort/klee-last/test000001.ktest'
+args       : ['/home/vondrp/programs/dip/profiler_tool/output/klee-output/insertion_sort/klee_program.bc']
+num objects: 1
+object 0: name: 'param_0'
+object 0: size: 40
+object 0: data: b'\x00@\x00\x00\x80\x00\x00\x00\x07\x00\x00\x00\x06\x00\x00\x00\x05\x00\x00\x00\x04\x00\x00\x00\x01\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\xff\xff\xff\xff'
+object 0: hex : 0x0040000080000000070000000600000005000000040000000100000000000000ffffffffffffffff
+object 0: text: .@......................................
+
+=== test000002.ktest ===
+ktest file : '/home/vondrp/programs/dip/profiler_tool/output/klee-output/insertion_sort/klee-last/test000002.ktest'
+args       : ['/home/vondrp/programs/dip/profiler_tool/output/klee-output/insertion_sort/klee_program.bc']
+num objects: 1
+object 0: name: 'param_0'
+object 0: size: 40
+object 0: data: b'B\x00\x00\x00\x00\x00\x00\x01@\x00\x00\x00\x07\x00\x00\x00\x06\x00\x00\x00\x05\x00\x00\x00\x04\x00\x00\x00\x02\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff'
+object 0: hex : 0x420000000000000140000000070000000600000005000000040000000200000000000000ffffffff
+object 0: text: B.......@...............................
+

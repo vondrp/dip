@@ -1,0 +1,3 @@
+KLEE: WARNING ONCE: calling external: syscall(16, 0, 21505, 139208962711552) at runtime/POSIX/fd.c:997 10
+KLEE: WARNING ONCE: Alignment of memory from call "malloc" is not modelled. Using alignment of 8.
+KLEE: WARNING ONCE: calling external: printf(140406923042816) at tests/sort/generated_main_klee.c:16 20

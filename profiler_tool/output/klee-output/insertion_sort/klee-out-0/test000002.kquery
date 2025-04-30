@@ -1,0 +1,19 @@
+array param_0[40] : w32 -> w8 = symbolic
+(query [(Eq false
+             (Slt (ReadLSB w32 4 param_0)
+                  N0:(ReadLSB w32 0 param_0)))
+         (Slt N1:(ReadLSB w32 8 param_0)
+              N0)
+         (Slt N2:(ReadLSB w32 12 param_0)
+              N1)
+         (Slt N3:(ReadLSB w32 16 param_0)
+              N2)
+         (Slt N4:(ReadLSB w32 20 param_0)
+              N3)
+         (Slt N5:(ReadLSB w32 24 param_0)
+              N4)
+         (Slt N6:(ReadLSB w32 28 param_0)
+              N5)
+         (Slt (ReadLSB w32 32 param_0)
+              N6)]
+        false)
