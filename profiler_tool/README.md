@@ -125,6 +125,34 @@ Každá sada odpovídá jednomu spuštění cílové funkce s konkrétními para
 
 Každý řádek představuje jednu sadu parametrů. Pro ukončení zadávání stiskněte dvakrát Enter.
 
+
+######  Zadání konstantních parametrů při generování KLEE vstupu
+
+Při použití skriptu `prepare_klee.py` budete nejprve vyzváni k určení, zda chcete některé parametry zadat jako **konstanty** (namísto symbolických). To může být užitečné nebo nutné například:
+
+- pokud se parametr **používá pro práci s pamětí** (např. je použit v `malloc` nebo pro určení velikosti pole),
+- nebo když pracujete s řetězci, které je jednodušší zadat explicitně.
+
+Pro každý parametr můžete:
+
+- **stisknout Enter** – parametr zůstane symbolický (KLEE bude generovat různé vstupy),
+- nebo zadat **konstantní hodnotu**, která bude natvrdo zapsána do vygenerovaného `generated_main_klee.c`.
+
+Příklady zadání:
+
+- `Řetězec (char *)` zadejte prostě jako text:  
+  `hello world`
+
+- `Pole (např. int *)` zadejte jako posloupnost čísel oddělených mezerou:  
+  `5 6 7 8`  
+  _(nepoužívejte závorky ani čárky)_
+
+- `Základní typy (int, unsigned, float...)`:  
+  `42`, `3.14`, `-1`
+
+Tato možnost vám umožní lépe kontrolovat, jak bude funkce analyzována, a předejít problémům při generování nebo běhu (např. s dynamickou alokací pomocí `malloc(nelem * sizeof(...))`).
+
+
 ######  Instalace závislostí 
 
 # Instalace závislostí nutné pro základní funkčnost
