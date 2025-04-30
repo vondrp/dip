@@ -1,0 +1,42 @@
+Srovnávací report
+----------------------------------------
+
+Počet instrukcí (min - max):
+  - native | ^hello 'ahoj Hallo hello': 55 instrukcí
+  - native | ' ' 'test druhe': 716 instrukcí
+  - native | test 'neni tam tes': 910 instrukcí
+  - native | auto 'Koupil nové auto': 1133 instrukcí
+
+Nejčastěji vykonávané řádky (celkově):
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:38 → 2432×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:40 → 288×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:36 → 43×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34 → 24×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35 → 16×
+
+Nejčastěji vykonávané řádky podle platformy a parametrů:
+- native | param: auto 'Koupil nové auto'
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:38 → 1000×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:40 → 120×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34 → 6×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42 → 2×
+- native | param: ^hello 'ahoj Hallo hello'
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:36 → 43×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34 → 6×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42 → 2×
+- native | param: test 'neni tam tes'
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:38 → 807×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:40 → 90×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34 → 6×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42 → 2×
+- native | param: ' ' 'test druhe'
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:38 → 625×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:40 → 78×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:34 → 6×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:35 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/regexp/regexp.c:42 → 2×
+
+Žádné pády programu nebyly detekovány.

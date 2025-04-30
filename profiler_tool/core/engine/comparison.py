@@ -34,6 +34,7 @@ def analyze_instruction_counts(data):
         total_instructions = sum(entry["instructions"].values())
         instruction_stats.append({
             "params": entry.get("params", "N/A"),
+            "platform": entry.get("platform", "unknown"),
             "total_instructions": total_instructions
         })
     
@@ -51,23 +52,45 @@ def find_most_executed_lines(data):
     sorted_lines = sorted(line_counts.items(), key=lambda x: x[1], reverse=True)
     return sorted_lines[:5]  # Vrátíme top 5 nejčastějších řádků
 
+def find_most_executed_lines_by_platform_and_params(data):
+    """Najde nejčastěji vykonávané řádky pro každou kombinaci platformy a parametrů."""
+    grouped_line_counts = defaultdict(lambda: defaultdict(int))
+
+    for entry in data:
+        platform = entry.get("platform", "unknown")
+        params = entry.get("params", "N/A")
+        key = (platform, params)
+
+        for line, count in entry["instructions"].items():
+            grouped_line_counts[key][line] += count
+
+    # Vrátíme top 5 pro každou kombinaci
+    result = {}
+    for key, line_counts in grouped_line_counts.items():
+        sorted_lines = sorted(line_counts.items(), key=lambda x: x[1], reverse=True)
+        result[key] = sorted_lines[:5]
+
+    return result
+
 def detect_crashes(data):
     """Zjistí, které běhy vedly k pádu programu."""
     crashes = []
-    
+
     for entry in data:
         if entry.get("crash_detected"):
             crashes.append({
+                "platform": entry.get("platform", "unknown"),
                 "params": entry.get("params", "N/A"),
                 "last_executed_line": entry.get("crash_last_executed_line", "N/A")
             })
-    
+
     return crashes
 
 def generate_report(data, output_file):
     """Vytvoří srovnávací report a uloží ho do souboru."""
     instruction_stats = analyze_instruction_counts(data)
     most_executed_lines = find_most_executed_lines(data)
+    lines_by_platform_and_params = find_most_executed_lines_by_platform_and_params(data)
     crashes = detect_crashes(data)
 
     report_lines = []
@@ -77,12 +100,20 @@ def generate_report(data, output_file):
     # Počet instrukcí
     report_lines.append("\nPočet instrukcí (min - max):")
     for entry in instruction_stats:
-        report_lines.append(f"  - {entry['params']}: {entry['total_instructions']} instrukcí")
+        label = f"{entry['platform']} | {entry['params']}"
+        report_lines.append(f"  - {label}: {entry['total_instructions']} instrukcí")
 
     # Nejčastěji vykonávané řádky
-    report_lines.append("\nNejčastěji vykonávané řádky:")
+    report_lines.append("\nNejčastěji vykonávané řádky (celkově):")
     for line, count in most_executed_lines:
         report_lines.append(f"  - {line} → {count}×")
+
+    # Nejčastěji vykonávané řádky podle platformy a parametrů
+    report_lines.append("\nNejčastěji vykonávané řádky podle platformy a parametrů:")
+    for (platform, params), lines in lines_by_platform_and_params.items():
+        report_lines.append(f"- {platform} | param: {params}")
+        for line, count in lines:
+            report_lines.append(f"  - {line} → {count}×")    
 
     # Pády programu
     if crashes:

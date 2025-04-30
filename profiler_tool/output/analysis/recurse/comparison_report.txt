@@ -1,0 +1,57 @@
+Srovnávací report
+----------------------------------------
+
+Počet instrukcí (min - max):
+  - arm | 10: 531 instrukcí
+  - riscv | 10: 594 instrukcí
+  - arm | 20: 1051 instrukcí
+  - riscv | 20: 1174 instrukcí
+  - native | 10: 6596 instrukcí
+  - native | 20: 13326 instrukcí
+
+Nejčastěji vykonávané řádky (celkově):
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 21732×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 1470×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 30×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 24×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 16×
+
+Nejčastěji vykonávané řádky podle platformy a parametrů:
+- native | param: 20
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 12657×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 659×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 3×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 2×
+- arm | param: 10
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 483×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 37×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 3×
+- riscv | param: 10
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 541×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 39×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 6×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 3×
+- native | param: 10
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 5927×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 659×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 3×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 2×
+- arm | param: 20
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 1003×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 37×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 4×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 3×
+- riscv | param: 20
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:49 → 1121×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:48 → 39×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:46 → 6×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:50 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/basic/test_program.c:47 → 3×
+
+Žádné pády programu nebyly detekovány.
