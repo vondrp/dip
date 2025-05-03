@@ -1,0 +1,14 @@
+{
+    "source_file": "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c",
+    "platform": "native",
+    "function": "check_threshold",
+    "params": "110",
+    "total_instructions": 1076,
+    "instructions": {
+        "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:27": 5,
+        "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:28": 3,
+        "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:29": 1064,
+        "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:30": 2,
+        "/home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:35": 2
+    }
+}

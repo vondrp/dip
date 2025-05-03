@@ -1,23 +1,23 @@
 klee --optimize --libc=uclibc --posix-runtime --only-output-states-covering-new --max-time=2min --max-memory=4096 --max-forks=10000 /home/vondrp/programs/dip/profiler_tool/output/klee-output/insertion_sort/klee_program.bc
-PID: 2401
+PID: 24163
 Using monotonic steady clock with 1/1000000000s resolution
-Started: 2025-04-30 16:36:38
+Started: 2025-05-02 20:43:38
 BEGIN searcher description
 <InterleavedSearcher> containing 2 searchers:
 RandomPathSearcher
 WeightedRandomSearcher::CoveringNew
 </InterleavedSearcher>
 END searcher description
-Finished: 2025-04-30 16:38:39
-Elapsed: 00:02:01
-KLEE: done: explored paths = 3611
-KLEE: done: avg. constructs per query = 313
-KLEE: done: total queries = 3611
+Finished: 2025-05-02 20:45:49
+Elapsed: 00:02:11
+KLEE: done: explored paths = 6088
+KLEE: done: avg. constructs per query = 344
+KLEE: done: total queries = 6088
 KLEE: done: valid queries = 0
-KLEE: done: invalid queries = 3611
-KLEE: done: query cex = 3611
+KLEE: done: invalid queries = 6088
+KLEE: done: query cex = 6088
 
-KLEE: done: total instructions = 501778
+KLEE: done: total instructions = 890721
 KLEE: done: completed paths = 0
-KLEE: done: partially completed paths = 3611
+KLEE: done: partially completed paths = 6088
 KLEE: done: generated tests = 2

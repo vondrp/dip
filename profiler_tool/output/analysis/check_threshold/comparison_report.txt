@@ -1,0 +1,36 @@
+Srovnávací report
+----------------------------------------
+
+Počet instrukcí (min - max):
+  - native | 10: 667 instrukcí
+  - native | 100: 681 instrukcí
+  - native | 110: 1076 instrukcí
+
+Nejčastěji vykonávané řádky (celkově):
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:32 → 1326×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:29 → 1064×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:27 → 15×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:28 → 9×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:35 → 6×
+
+Nejčastěji vykonávané řádky podle platformy a parametrů:
+- native | param: 10
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:32 → 656×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:27 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:28 → 3×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:35 → 2×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:33 → 1×
+- native | param: 100
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:32 → 670×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:27 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:28 → 3×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:35 → 2×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:33 → 1×
+- native | param: 110
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:29 → 1064×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:27 → 5×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:28 → 3×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:30 → 2×
+  - /home/vondrp/programs/dip/profiler_tool/tests/global/src/globals.c:35 → 2×
+
+Žádné pády programu nebyly detekovány.

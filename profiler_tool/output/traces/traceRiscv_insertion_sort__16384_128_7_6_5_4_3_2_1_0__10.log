@@ -24,9 +24,9 @@ strlen, 0x24b60: andi	a5,a0,7
 strlen, 0x24b64: beqz	a5,0x24b7e <strlen+30>
 strlen, 0x24b7e: mv	a5,a0
 strlen, 0x24b80: auipc	a6,0x31
-strlen, 0x24b84: ld	a6,568(a6)
+strlen, 0x24b84: ld	a6,608(a6)
 strlen, 0x24b88: auipc	a1,0x31
-strlen, 0x24b8c: ld	a1,568(a1)
+strlen, 0x24b8c: ld	a1,608(a1)
 strlen, 0x24b90: ld	a3,0(a5)
 strlen, 0x24b92: mv	a2,a5
 strlen, 0x24b94: addi	a5,a5,8
@@ -729,7 +729,7 @@ main, 0x10a6e: slli	a5,a5,0x2
 main, 0x10a70: sd	a5,-112(s0)
 main, 0x10a74: sw	zero,-148(s0)
 main, 0x10a78: lui	a5,0x52
-main, 0x10a7c: addi	a1,a5,600
+main, 0x10a7c: addi	a1,a5,640
 main, 0x10a80: ld	a0,-144(s0)
 [CALL] main -> <strtok>
 main, 0x10a84: jal	ra,0x2533e <strtok>
@@ -812,7 +812,7 @@ strchrnul, 0x25d5e: or	a5,a5,a3
 strchrnul, 0x25d60: slli	a7,a5,0x20
 strchrnul, 0x25d64: or	a7,a7,a5
 strchrnul, 0x25d68: auipc	a1,0x30
-strchrnul, 0x25d6c: ld	a1,48(a1)
+strchrnul, 0x25d6c: ld	a1,88(a1)
 strchrnul, 0x25d70: li	t1,-1
 strchrnul, 0x25d72: ld	a2,0(a0)
 strchrnul, 0x25d74: mv	t3,a0
@@ -964,7 +964,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -1013,7 +1013,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -1098,7 +1098,7 @@ strchrnul, 0x25d5e: or	a5,a5,a3
 strchrnul, 0x25d60: slli	a7,a5,0x20
 strchrnul, 0x25d64: or	a7,a7,a5
 strchrnul, 0x25d68: auipc	a1,0x30
-strchrnul, 0x25d6c: ld	a1,48(a1)
+strchrnul, 0x25d6c: ld	a1,88(a1)
 strchrnul, 0x25d70: li	t1,-1
 strchrnul, 0x25d72: ld	a2,0(a0)
 strchrnul, 0x25d74: mv	t3,a0
@@ -1245,7 +1245,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -1327,7 +1327,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -1532,7 +1532,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -1590,7 +1590,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -1675,7 +1675,7 @@ strchrnul, 0x25d5e: or	a5,a5,a3
 strchrnul, 0x25d60: slli	a7,a5,0x20
 strchrnul, 0x25d64: or	a7,a7,a5
 strchrnul, 0x25d68: auipc	a1,0x30
-strchrnul, 0x25d6c: ld	a1,48(a1)
+strchrnul, 0x25d6c: ld	a1,88(a1)
 strchrnul, 0x25d70: li	t1,-1
 strchrnul, 0x25d72: ld	a2,0(a0)
 strchrnul, 0x25d74: mv	t3,a0
@@ -1814,7 +1814,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -1872,7 +1872,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -2077,7 +2077,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -2135,7 +2135,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -2231,7 +2231,7 @@ strchrnul, 0x25d5e: or	a5,a5,a3
 strchrnul, 0x25d60: slli	a7,a5,0x20
 strchrnul, 0x25d64: or	a7,a7,a5
 strchrnul, 0x25d68: auipc	a1,0x30
-strchrnul, 0x25d6c: ld	a1,48(a1)
+strchrnul, 0x25d6c: ld	a1,88(a1)
 strchrnul, 0x25d70: li	t1,-1
 strchrnul, 0x25d72: ld	a2,0(a0)
 strchrnul, 0x25d74: mv	t3,a0
@@ -2362,7 +2362,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -2420,7 +2420,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -2625,7 +2625,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -2683,7 +2683,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -2888,7 +2888,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -2946,7 +2946,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -3036,7 +3036,7 @@ strchrnul, 0x25d5e: or	a5,a5,a3
 strchrnul, 0x25d60: slli	a7,a5,0x20
 strchrnul, 0x25d64: or	a7,a7,a5
 strchrnul, 0x25d68: auipc	a1,0x30
-strchrnul, 0x25d6c: ld	a1,48(a1)
+strchrnul, 0x25d6c: ld	a1,88(a1)
 strchrnul, 0x25d70: li	t1,-1
 strchrnul, 0x25d72: ld	a2,0(a0)
 strchrnul, 0x25d74: mv	t3,a0
@@ -3171,7 +3171,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -3229,7 +3229,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -3446,7 +3446,7 @@ ____strtoll_l_internal, 0x151fc: beq	a2,a5,0x1510e <____strtoll_l_internal+136>
 ____strtoll_l_internal, 0x1510e: bnez	s7,0x152fe <____strtoll_l_internal+632>
 ____strtoll_l_internal, 0x15112: li	t5,5
 ____strtoll_l_internal, 0x15114: auipc	a7,0x3e
-____strtoll_l_internal, 0x15118: ld	a7,-700(a7)
+____strtoll_l_internal, 0x15118: ld	a7,-660(a7)
 ____strtoll_l_internal, 0x1511c: li	a2,10
 ____strtoll_l_internal, 0x1511e: beqz	s0,0x153da <____strtoll_l_internal+852>
 ____strtoll_l_internal, 0x15122: auipc	a5,0x61
@@ -3514,7 +3514,7 @@ main, 0x10ac6: slli	a5,s1,0x2
 main, 0x10aca: add	a5,a5,a4
 main, 0x10acc: sw	a3,0(a5)
 main, 0x10ace: lui	a5,0x52
-main, 0x10ad2: addi	a1,a5,600
+main, 0x10ad2: addi	a1,a5,640
 main, 0x10ad6: li	a0,0
 [CALL] main -> <strtok>
 main, 0x10ad8: jal	ra,0x2533e <strtok>
@@ -3550,7 +3550,7 @@ main, 0x10adc: sd	a0,-136(s0)
 main, 0x10ae0: ld	a5,-136(s0)
 main, 0x10ae4: beqz	a5,0x10af8 <main+470>
 main, 0x10af8: lui	a5,0x52
-main, 0x10afc: addi	a0,a5,608
+main, 0x10afc: addi	a0,a5,648
 [CALL] main -> <puts>
 main, 0x10b00: jal	ra,0x1a3fe <puts>
 puts, 0x1a3fe: addi	sp,sp,-48
@@ -3569,9 +3569,9 @@ strlen, 0x24b60: andi	a5,a0,7
 strlen, 0x24b64: beqz	a5,0x24b7e <strlen+30>
 strlen, 0x24b7e: mv	a5,a0
 strlen, 0x24b80: auipc	a6,0x31
-strlen, 0x24b84: ld	a6,568(a6)
+strlen, 0x24b84: ld	a6,608(a6)
 strlen, 0x24b88: auipc	a1,0x31
-strlen, 0x24b8c: ld	a1,568(a1)
+strlen, 0x24b8c: ld	a1,608(a1)
 strlen, 0x24b90: ld	a3,0(a5)
 strlen, 0x24b92: mv	a2,a5
 strlen, 0x24b94: addi	a5,a5,8
@@ -3893,10 +3893,10 @@ ____strtoull_l_internal, 0x15472: li	a2,10
 ____strtoull_l_internal, 0x15474: bnez	s7,0x1562c <____strtoull_l_internal+580>
 ____strtoull_l_internal, 0x15478: slli	a5,a3,0x3
 ____strtoull_l_internal, 0x1547c: auipc	a4,0x3e
-____strtoull_l_internal, 0x15480: addi	a4,a4,-1564
+____strtoull_l_internal, 0x15480: addi	a4,a4,-1524
 ____strtoull_l_internal, 0x15484: add	a4,a4,a5
 ____strtoull_l_internal, 0x15486: auipc	a5,0x3e
-____strtoull_l_internal, 0x1548a: addi	a5,a5,-1294
+____strtoull_l_internal, 0x1548a: addi	a5,a5,-1254
 ____strtoull_l_internal, 0x1548e: add	a5,a5,a3
 ____strtoull_l_internal, 0x15490: ld	a6,0(a4)
 ____strtoull_l_internal, 0x15494: lbu	t5,0(a5)
@@ -5548,7 +5548,7 @@ memcpy, 0x25962: bnez	a5,0x259a2 <memcpy+138>
 memcpy, 0x25964: jal	ra,0x259ac <_wordcopy_fwd_aligned>
 _wordcopy_fwd_aligned, 0x259ac: andi	a5,a2,7
 _wordcopy_fwd_aligned, 0x259b0: auipc	a4,0x30
-_wordcopy_fwd_aligned, 0x259b4: addi	a4,a4,1048
+_wordcopy_fwd_aligned, 0x259b4: addi	a4,a4,1088
 _wordcopy_fwd_aligned, 0x259b8: slli	a5,a5,0x2
 _wordcopy_fwd_aligned, 0x259ba: add	a5,a5,a4
 _wordcopy_fwd_aligned, 0x259bc: lw	a5,0(a5)

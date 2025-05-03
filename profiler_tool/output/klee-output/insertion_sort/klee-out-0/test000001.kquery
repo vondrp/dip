@@ -13,6 +13,8 @@ array param_0[40] : w32 -> w8 = symbolic
               N4)
          (Slt N6:(ReadLSB w32 28 param_0)
               N5)
-         (Slt (ReadLSB w32 32 param_0)
-              N6)]
+         (Slt N7:(ReadLSB w32 32 param_0)
+              N6)
+         (Slt (ReadLSB w32 36 param_0)
+              N7)]
         false)
