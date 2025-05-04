@@ -13,7 +13,15 @@ from config import log_info, log_debug, log_warning, log_error
 
 
 def delete_file(file_path):
-    """Odstraní zadaný soubor, pokud existuje."""
+    """
+    Odstraní zadaný soubor, pokud existuje.
+
+    Parametry:
+        file_path (str): Cesta k souboru ke smazání.
+
+    Návratová hodnota:
+        None
+    """
     if os.path.exists(file_path):
         try:
             os.remove(file_path)
@@ -24,7 +32,15 @@ def delete_file(file_path):
         log_debug(f"Soubor {file_path} neexistuje, není co mazat.")
 
 def extract_functions_from_header(header_file):
-    """Najde deklarace funkcí v hlavičkovém souboru."""
+    """
+    Najde deklarace funkcí v hlavičkovém souboru.
+
+    Parametry:
+        header_file (str): Cesta k .h souboru.
+
+    Návratová hodnota:
+        dict[str, list[str]]: Mapa názvů funkcí na seznam parametrů.
+    """
     functions = {}
     with open(header_file, "r") as f:
         for line in f:
@@ -36,7 +52,15 @@ def extract_functions_from_header(header_file):
     return functions
 
 def select_header_file(header_file=None):
-    """Vybere hlavičkový soubor (.h) pomocí fzf."""
+    """
+    Vybere nebo ověří hlavičkový soubor pomocí FZF.
+
+    Parametry:
+        header_file (str | None): Cesta k hlavičkovému souboru nebo None pro ruční výběr.
+
+    Návratová hodnota:
+        str: Validní cesta k hlavičkovému souboru.
+    """
     if not header_file:
         log_info("\n Vyber hlavičkový soubor (.h):")
         header_file = fzf_select_file(".h")
@@ -50,7 +74,15 @@ def select_header_file(header_file=None):
     return header_file
 
 def extract_function_from_header(header_file):
-    """Extrahuje funkce z hlavičkového souboru."""
+    """
+    Extrahuje deklarace funkcí z hlavičkového souboru a ověří, že nějaké existují.
+
+    Parametry:
+        header_file (str): Cesta k .h souboru.
+
+    Návratová hodnota:
+        dict[str, list[str]]: Nalezené funkce a jejich parametry.
+    """
     functions = extract_functions_from_header(header_file)
     if not functions:
         log_error(f"V souboru {header_file} nebyly nalezeny žádné funkce.")
@@ -58,7 +90,16 @@ def extract_function_from_header(header_file):
     return functions
 
 def select_target_function(functions, function_name=None):
-    """Umožní uživateli vybrat cílovou funkci ze seznamu funkcí."""
+    """
+    Vybere cílovou funkci ze seznamu funkcí.
+
+    Parametry:
+        functions (dict[str, list[str]]): Mapa dostupných funkcí.
+        function_name (str | None): Název funkce pro automatický výběr (volitelné).
+
+    Návratová hodnota:
+        str: Vybraná funkce.
+    """
     if function_name:
         if function_name in functions:
             target_function = function_name
@@ -88,7 +129,16 @@ def select_target_function(functions, function_name=None):
     return target_function
 
 def select_source_file(directory, src_file=None):
-    """Vybere odpovídající .c soubor."""
+    """
+    Vybere odpovídající .c soubor.
+
+    Parametry:
+        directory (str): Kořenový adresář pro výběr.
+        src_file (str | None): Předvolený soubor nebo None pro výběr.
+
+    Návratová hodnota:
+        str: Cesta k validnímu .c souboru.
+    """
     if not src_file:
         log_info("\n Vyber odpovídající .c soubor:")
         src_file = fzf_select_file(".c")
@@ -101,7 +151,16 @@ def select_source_file(directory, src_file=None):
     return src_file
 
 def check_function_in_file(src_file, target_function):
-    """Zkontroluje, zda .c soubor obsahuje požadovanou funkci."""
+    """
+    Zkontroluje, zda .c soubor obsahuje zadanou funkci.
+
+    Parametry:
+        src_file (str): Cesta k .c souboru.
+        target_function (str): Název hledané funkce.
+
+    Návratová hodnota:
+        bool: True pokud funkce existuje, jinak False (nebo ukončí běh).
+    """
     with open(src_file, "r") as f:
         file_content = f.read()
         if target_function not in file_content:
@@ -115,7 +174,22 @@ def check_function_in_file(src_file, target_function):
     return True
 
 def prepare_function(header_file=None, src_file=None, function_name=None, use_klee=False, architecture=ACTIVE_ARCHITECTURE, main_mode="auto", own_main_file=None):
-    """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru."""
+    """
+    Připraví hlavičku, funkci a .c soubor pro testování nebo kompilaci.
+
+    Parametry:
+        header_file (str | None): Cesta k .h souboru.
+        src_file (str | None): Cesta k .c souboru.
+        function_name (str | None): Název funkce.
+        use_klee (bool): Příznak zda se připravuje pro KLEE.
+        architecture (str): Cílová architektura.
+        main_mode (str): Způsob generování mainu ("auto", "template", "own").
+        own_main_file (str | None): Vlastní main soubor.
+
+    Návratová hodnota:
+        str: Cesta ke generovanému binárnímu souboru.
+    """
+
     header_file, target_function, functions = select_and_validate_function(header_file, function_name)
 
     # Extrahujeme adresář z hlavičkového souboru
@@ -142,7 +216,18 @@ def prepare_function(header_file=None, src_file=None, function_name=None, use_kl
     
 
 def prepare_klee(header_file=None, src_file=None, function_name=None, architecture="native"):
-    """Funkce pro výběr hlavičkového souboru, funkce a odpovídajícího .c souboru pro KLEE."""
+    """
+    Připraví soubory pro spuštění testů pomocí KLEE.
+
+    Parametry:
+        header_file (str | None): Hlavičkový soubor.
+        src_file (str | None): Zdrojový soubor.
+        function_name (str | None): Název funkce.
+        architecture (str): Cílová architektura.
+
+    Návratová hodnota:
+        None
+    """
     header_file, target_function, functions = select_and_validate_function(header_file, function_name)
     
     # Extrahujeme adresář z hlavičkového souboru
@@ -207,10 +292,16 @@ def prepare_klee(header_file=None, src_file=None, function_name=None, architectu
 
 def parse_param_type(param_decl):
     """
-    Převede deklaraci parametru na čistý typ jako např. 'int*' nebo 'double'.
-    Např.:
+    Převede deklaraci parametru na čistý typ.
+     Např.:
         'int *array' -> 'int*'
         'const char *name' -> 'char*'
+
+    Parametry:
+        param_decl (str): Deklarace parametru, např. 'const int *x'.
+
+    Návratová hodnota:
+        str: Základní typ (např. 'int*').
     """
     tokens = param_decl.replace(',', '').split()
     base_type = ""
@@ -227,21 +318,53 @@ def parse_param_type(param_decl):
     return base_type
 
 def select_and_validate_function(header_file=None, function_name=None):
-    """Vybere hlavičkový soubor a ověří existenci funkce."""
+    """
+    Vybere hlavičkový soubor a ověří zvolenou funkci.
+
+    Parametry:
+        header_file (str | None): Cesta k .h souboru.
+        function_name (str | None): Název cílové funkce.
+
+    Návratová hodnota:
+        tuple[str, str, dict[str, list[str]]]: (hlavičkový soubor, název funkce, mapa funkcí)
+    """
     header_file = select_header_file(header_file)
     functions = extract_function_from_header(header_file)
     target_function = select_target_function(functions, function_name)
     return header_file, target_function, functions
 
 def select_and_validate_source_file(directory, src_file, target_function):
-    """Vybere odpovídající .c soubor a ověří, zda obsahuje požadovanou funkci."""
+    """
+    Vybere a ověří zdrojový soubor podle funkce.
+
+    Parametry:
+        directory (str): Adresář pro hledání.
+        src_file (str): Předvolený zdrojový soubor.
+        target_function (str): Cílová funkce.
+
+    Návratová hodnota:
+        str: Validní .c soubor obsahující cílovou funkci.
+    """
     src_file = select_source_file(directory, src_file)
     while not check_function_in_file(src_file, target_function):
         src_file = select_source_file(directory, src_file)
     return src_file
 
 def generate_main_file(target_function, functions, header_file, main_mode, own_main_file, directory):
-    """Generuje main soubor na základě módů."""
+    """
+    Generuje main soubor podle zvoleného módu.
+
+    Parametry:
+        target_function (str): Cílová funkce.
+        functions (dict): Mapa funkcí.
+        header_file (str): Cesta k .h souboru.
+        main_mode (str): Mód generování ('auto', 'template', 'own').
+        own_main_file (str | None): Vlastní main soubor.
+        directory (str): Cílový adresář.
+
+    Návratová hodnota:
+        None
+    """
     if main_mode == "auto":
         generate_main(target_function, functions[target_function], header_file)
     elif main_mode == "template":
@@ -255,7 +378,16 @@ def generate_main_file(target_function, functions, header_file, main_mode, own_m
         raise ValueError(f"Neplatný mód main generování: {main_mode}")    
 
 def handle_own_main_file(own_main_file, directory):
-    """Ošetří vlastní main soubor, pokud byl zadán."""
+    """
+    Zpracuje vlastní main soubor a zkopíruje ho jako generated_main.c.
+
+    Parametry:
+        own_main_file (str): Cesta k vlastnímu main souboru.
+        directory (str): Cílový adresář.
+
+    Návratová hodnota:
+        str: Cesta ke zkopírovanému souboru generated_main.c.
+    """
 
     log_debug(f"Own main file: {own_main_file} {not os.path.exists(own_main_file)} {not own_main_file} ")
     if not own_main_file or not os.path.exists(own_main_file):
@@ -277,7 +409,17 @@ def handle_own_main_file(own_main_file, directory):
     return dest
 
 def compile_and_generate_binary(src_file, target_function, architecture):
-    """Komplikuje soubor a generuje binární soubor."""
+    """
+    Zkompiluje soubor a vytvoří výstupní binární soubor.
+
+    Parametry:
+        src_file (str): Zdrojový .c soubor.
+        target_function (str): Název funkce.
+        architecture (str): Cílová architektura ('arm', 'riscv', 'x86').
+
+    Návratová hodnota:
+        str: Cesta k binárnímu souboru.
+    """
     log_debug("\n Kompilace `generated_main.c`...")
     src_dir = os.path.dirname(src_file)
     binary_file = ""

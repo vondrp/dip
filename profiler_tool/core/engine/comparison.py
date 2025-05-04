@@ -1,3 +1,12 @@
+"""
+Porovnání běhů výpočtových skriptů na základě výstupních JSON souborů.
+
+Tento skript slouží k analýze a porovnání výkonu skriptů (např. v experimentech nebo CI testování)
+pomocí JSON výstupů, které obsahují informace o počtu provedených instrukcí, případných pádech 
+a konfiguraci běhu (platforma, parametry). Výstupem je textový srovnávací report s klíčovými metrikami.
+
+"""
+
 import os
 import json
 from collections import defaultdict
@@ -10,7 +19,15 @@ default_analysis_folder = os.path.join(os.path.dirname(__file__), "..", "logs", 
 output_file = os.path.join(default_analysis_folder, "comparison_report.txt")
 
 def load_json_files(file_paths):
-    """Načte všechny JSON soubory a vrátí seznam jejich dat."""
+    """
+    Načte všechny JSON soubory ze zadaných cest.
+
+    Parametry:
+        file_paths (list): Seznam cest k JSON souborům.
+
+    Návratová hodnota:
+        list: Seznam slovníků s obsahem JSON souborů.
+    """
     data = []
     
     for file_path in file_paths:
@@ -27,7 +44,15 @@ def load_json_files(file_paths):
     return data
 
 def analyze_instruction_counts(data):
-    """Analyzuje počet instrukcí pro jednotlivé běhy."""
+    """
+    Spočítá celkový počet instrukcí pro každý běh.
+
+    Parametry:
+        data (list): Seznam běhů (slovníků s instrukcemi).
+
+    Návratová hodnota:
+        list: Seznam statistik (platforma, parametry, počet instrukcí), seřazený vzestupně podle počtu instrukcí.
+    """
     instruction_stats = []
     
     for entry in data:
@@ -42,7 +67,15 @@ def analyze_instruction_counts(data):
     return instruction_stats
 
 def find_most_executed_lines(data):
-    """Najde nejčastěji vykonávané řádky kódu napříč běhy."""
+    """
+    Najde napříč všemi běhy nejčastěji vykonávané řádky kódu.
+
+    Parametry:
+        data (list): Seznam běhů.
+
+    Návratová hodnota:
+        list: Top 5 nejčastějších řádků a jejich počty.
+    """
     line_counts = defaultdict(int)
     
     for entry in data:
@@ -53,7 +86,15 @@ def find_most_executed_lines(data):
     return sorted_lines[:5]  # Vrátíme top 5 nejčastějších řádků
 
 def find_most_executed_lines_by_platform_and_params(data):
-    """Najde nejčastěji vykonávané řádky pro každou kombinaci platformy a parametrů."""
+    """
+    Najde nejčastěji vykonávané řádky zvlášť pro každou kombinaci platformy a parametrů.
+
+    Parametry:
+        data (list): Seznam běhů.
+
+    Návratová hodnota:
+        dict: Mapa (platforma, parametry) → top 5 řádků.
+    """
     grouped_line_counts = defaultdict(lambda: defaultdict(int))
 
     for entry in data:
@@ -73,7 +114,15 @@ def find_most_executed_lines_by_platform_and_params(data):
     return result
 
 def detect_crashes(data):
-    """Zjistí, které běhy vedly k pádu programu."""
+    """
+    Identifikuje běhy, u kterých došlo k pádu.
+
+    Parametry:
+        data (list): Seznam běhů.
+
+    Návratová hodnota:
+        list: Seznam informací o pádech (platforma, parametry, poslední řádek).
+    """
     crashes = []
 
     for entry in data:
@@ -87,7 +136,13 @@ def detect_crashes(data):
     return crashes
 
 def generate_report(data, output_file):
-    """Vytvoří srovnávací report a uloží ho do souboru."""
+    """
+    Vygeneruje srovnávací report a uloží ho do textového souboru.
+
+    Parametry:
+        data (list): Načtená data z JSON souborů.
+        output_file (str): Cesta k výstupnímu reportu.
+    """
     instruction_stats = analyze_instruction_counts(data)
     most_executed_lines = find_most_executed_lines(data)
     lines_by_platform_and_params = find_most_executed_lines_by_platform_and_params(data)
@@ -131,7 +186,13 @@ def generate_report(data, output_file):
 
 
 def compare_runs(folder=None, files=None):
-    """Porovná běhy funkcí na základě JSON souborů ve složce nebo vybraných souborů."""
+    """
+    Hlavní rozhraní pro porovnání běhů — načte JSONy ze zadané složky nebo seznamu souborů.
+
+    Parametry:
+        folder (str): Cesta ke složce s JSON soubory.
+        files (list): Seznam cest k jednotlivým JSON souborům.
+    """
     if folder:
         json_files = [os.path.join(folder, f) for f in os.listdir(folder) if f.endswith(".json")]
     elif files:

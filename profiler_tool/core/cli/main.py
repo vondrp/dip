@@ -1,3 +1,27 @@
+"""
+CLI nástroj pro analýzu funkcí v jazyce C pomocí trace a konkolického testování.
+
+Tento skript poskytuje několik příkazů pro:
+- výběr a kompilaci funkce z hlavičkového a zdrojového souboru (`prepare-function`)
+- spuštění programu s trasováním pomocí GDB a analýzou výstupu (`trace-analysis`)
+- porovnání více běhů podle výstupních JSON souborů (`compare-runs`)
+- analýzu funkcí pomocí nástroje KLEE pro konkolické testování (`prepare-klee`)
+- kombinovanou analýzu s automatickým výběrem a trasováním funkce (`func-analysis`)
+
+Použití:
+    python cli.py <command> [volby]
+
+Dostupné příkazy:
+- prepare-function : Vybere funkci ze souboru, vygeneruje main a zkompiluje binárku
+- trace-analysis   : Spustí binárku s parametry, vytvoří trace a provede analýzu
+- compare-runs     : Porovná výstupy z několika analýz na úrovni instrukcí
+- prepare-klee     : Spustí analýzu funkce pomocí nástroje KLEE
+- func-analysis    : Spojí výběr funkce, její kompilaci a analýzu do jednoho kroku
+
+Argumenty pro jednotlivé příkazy se zobrazí pomocí:
+    python cli.py <command> --help
+"""
+
 import argparse
 from core.cli.function_preparation import prepare_function, prepare_klee
 from core.cli.trace_analysis import trace_analysis

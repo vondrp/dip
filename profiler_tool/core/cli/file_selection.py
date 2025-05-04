@@ -5,7 +5,15 @@ from config import LOOKOUT_DIR
 
 
 def get_directory_from_user(current_directory):
-    """Zobrazí aktuální adresář a umožní uživateli změnit ho."""
+    """
+    Umožní uživateli potvrdit nebo změnit aktuální pracovní adresář.
+
+    Parametry:
+        current_directory (str): Výchozí cesta k adresáři.
+
+    Návratová hodnota:
+        str: Nově zvolený nebo potvrzený adresář.
+    """
     if current_directory == '.':
         current_directory = os.path.abspath(current_directory)
 
@@ -28,7 +36,16 @@ def get_directory_from_user(current_directory):
     return current_directory
 
 def fzf_select_files(extension, directory=LOOKOUT_DIR):
-    """Vybere pomocí fzf jeden nebo více souborů s danou příponou v daném adresáři."""
+    """
+    Vybere více souborů s danou příponou v zadaném adresáři pomocí FZF.
+
+    Parametry:
+        extension (str): Přípona hledaných souborů (např. ".json").
+        directory (str): Adresář, kde hledat soubory (výchozí: LOOKOUT_DIR).
+
+    Návratová hodnota:
+        list[str]: Seznam vybraných existujících souborů.
+    """
     directory = get_directory_from_user(directory)  
     try:
         command = f"find {directory} -type f -name '*{extension}' | fzf -m"
@@ -40,7 +57,19 @@ def fzf_select_files(extension, directory=LOOKOUT_DIR):
         return [f for f in file_paths if os.path.exists(f)]
 
 def fzf_select_file(extension, directory=LOOKOUT_DIR):
-    """Vybere pomocí fzf jeden soubor s danou příponou v daném adresáři."""
+    """
+    Umožní vybrat jeden soubor s danou příponou pomocí FZF.
+
+    Pokud výběr pomocí FZF selže, funkce nabídne možnost manuálního zadání cesty.
+    Užitečné např. pro výběr konkrétního konfiguračního nebo log souboru.
+
+    Parametry:
+        extension (str): Přípona hledaného souboru.
+        directory (str): Adresář, kde začít hledání.
+
+    Návratová hodnota:
+        str | None: Cesta k vybranému souboru, nebo None pokud nebyl žádný vybrán.
+    """
     directory = get_directory_from_user(directory)  
     try:
         command = f"find {directory} -type f -name '*{extension}' | fzf"
@@ -55,7 +84,16 @@ def fzf_select_file(extension, directory=LOOKOUT_DIR):
         return file_path
 
 def fzf_select_directory(base_dir):
-    """Vybere pomocí fzf složku v daném adresáři."""
+    """
+    Vybere jeden soubor s danou příponou pomocí FZF.
+
+    Parametry:
+        extension (str): Přípona hledaného souboru.
+        directory (str): Adresář pro výběr (výchozí: LOOKOUT_DIR).
+
+    Návratová hodnota:
+        str | None: Cesta k vybranému souboru, nebo None při neúspěchu.
+    """
     base_dir = get_directory_from_user(base_dir)  
     try:
         command = f"find {base_dir} -type d | fzf"
